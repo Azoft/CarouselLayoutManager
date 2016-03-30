@@ -3,7 +3,7 @@ CarouselLayoutManager for RecyclerView
 
 ## Examples
 
-![Example](resources/carousel_work.gif "working example")
+![Example](resources/carousel_work_small.gif "working example")
 
 ## Description
 
