@@ -1,0 +1,2 @@
+# CarouselLayoutManager
+LayoutManager for RecyclerView
