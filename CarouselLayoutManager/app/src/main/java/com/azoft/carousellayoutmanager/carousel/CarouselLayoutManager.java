@@ -252,6 +252,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             if (mPendingScrollPosition < state.getItemCount()) {
                 mLayoutHelper.mScrollOffset = VERTICAL == mOrientation ? mPendingScrollPosition * mDecoratedChildHeight :
                         mPendingScrollPosition * mDecoratedChildWidth;
+            } else {
+                mPendingScrollPosition = INVALID_POSITION;
             }
         }
 
