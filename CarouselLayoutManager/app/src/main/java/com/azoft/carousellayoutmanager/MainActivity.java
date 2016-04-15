@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -13,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.azoft.carousellayoutmanager.carousel.CarouselLayoutManager;
 import com.azoft.carousellayoutmanager.carousel.CarouselZoomPostLayoutListener;
@@ -41,6 +41,22 @@ public class MainActivity extends AppCompatActivity {
         list.setHasFixedSize(true);
         list.setAdapter(new TestAdapter(this));
         list.addOnScrollListener(new CenterScrollListener());
+
+        layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
+
+            private Toast mToast;
+
+            @Override
+            public void onCenterItemChanged(final int adapterPosition) {
+                if (null != mToast) {
+                    mToast.cancel();
+                }
+/*
+                mToast = Toast.makeText(MainActivity.this, String.valueOf(adapterPosition), Toast.LENGTH_LONG);
+                mToast.show();
+*/
+            }
+        });
 
         //noinspection ConstantConditions
         findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {

@@ -54,6 +54,9 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     private PostLayoutListener mViewPostLayout;
 
+    private final List<OnCenterItemSelectionListener> mOnCenterItemSelectionListeners = new ArrayList<>();
+    private int mCenterItemPosition = INVALID_POSITION;
+
     /**
      * @param orientation should be {@link #VERTICAL} or {@link #HORIZONTAL}
      */
@@ -140,6 +143,27 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public boolean canScrollVertically() {
         return VERTICAL == mOrientation;
+    }
+
+    /**
+     * @return current layout center item
+     */
+    public int getCenterItemPosition() {
+        return mCenterItemPosition;
+    }
+
+    /**
+     * @param onCenterItemSelectionListener listener that will trigger when ItemSelectionChanges. can't be null
+     */
+    public void addOnItemSelectionListener(@NonNull final OnCenterItemSelectionListener onCenterItemSelectionListener) {
+        mOnCenterItemSelectionListeners.add(onCenterItemSelectionListener);
+    }
+
+    /**
+     * @param onCenterItemSelectionListener listener that was previously added by {@link #addOnItemSelectionListener(OnCenterItemSelectionListener)}
+     */
+    public void removeOnItemSelectionListener(@NonNull final OnCenterItemSelectionListener onCenterItemSelectionListener) {
+        mOnCenterItemSelectionListeners.remove(onCenterItemSelectionListener);
     }
 
     @SuppressWarnings("RefusedBequest")
@@ -242,7 +266,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     public void onLayoutChildren(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
         if (0 == state.getItemCount()) {
             removeAndRecycleAllViews(recycler);
+            notifyOnItemSelectionListeners(INVALID_POSITION);
             return;
+        }
+        if (state.didStructureChange()) {
+            // seance we don't know if views are actual now. so we should delete all cached views.
+            removeAndRecycleAllViews(recycler);
         }
 
         if (null == mDecoratedChildWidth) {
@@ -276,34 +305,60 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         final int width = getWidthNoPadding();
         final int height = getHeightNoPadding();
         if (VERTICAL == mOrientation) {
-            final int start = (width - mDecoratedChildWidth) / 2;
-            final int end = start + mDecoratedChildWidth;
-
-            final int centerViewTop = (height - mDecoratedChildHeight) / 2;
-
-            for (int i = 0, count = mLayoutHelper.mLayoutOrder.length; i < count; ++i) {
-                final LayoutOrder layoutOrder = mLayoutHelper.mLayoutOrder[i];
-                final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
-                final int top = centerViewTop + offset;
-                final int bottom = top + mDecoratedChildHeight;
-                fillChildItem(start, top, end, bottom, layoutOrder, recycler, i);
-            }
+            fillDataVertical(recycler, width, height);
         } else {
-            final int top = (height - mDecoratedChildHeight) / 2;
-            final int bottom = top + mDecoratedChildHeight;
-
-            final int centerViewStart = (width - mDecoratedChildWidth) / 2;
-
-            for (int i = 0, count = mLayoutHelper.mLayoutOrder.length; i < count; ++i) {
-                final LayoutOrder layoutOrder = mLayoutHelper.mLayoutOrder[i];
-                final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
-                final int start = centerViewStart + offset;
-                final int end = start + mDecoratedChildWidth;
-                fillChildItem(start, top, end, bottom, layoutOrder, recycler, i);
-            }
+            fillDataHorizontal(recycler, width, height);
         }
 
         recycler.clear();
+
+        detectOnItemSelectionChanged(currentScrollPosition, state);
+    }
+
+    private void detectOnItemSelectionChanged(final float currentScrollPosition, final RecyclerView.State state) {
+        final float absCurrentScrollPosition = makeScrollPositionInRange0ToCount(currentScrollPosition, state.getItemCount());
+        final int centerItem = Math.round(absCurrentScrollPosition);
+
+        if (mCenterItemPosition != centerItem) {
+            notifyOnItemSelectionListeners(centerItem);
+        }
+    }
+
+    private void notifyOnItemSelectionListeners(final int centerItem) {
+        mCenterItemPosition = centerItem;
+        for (final OnCenterItemSelectionListener onCenterItemSelectionListener : mOnCenterItemSelectionListeners) {
+            onCenterItemSelectionListener.onCenterItemChanged(centerItem);
+        }
+    }
+
+    private void fillDataVertical(final RecyclerView.Recycler recycler, final int width, final int height) {
+        final int start = (width - mDecoratedChildWidth) / 2;
+        final int end = start + mDecoratedChildWidth;
+
+        final int centerViewTop = (height - mDecoratedChildHeight) / 2;
+
+        for (int i = 0, count = mLayoutHelper.mLayoutOrder.length; i < count; ++i) {
+            final LayoutOrder layoutOrder = mLayoutHelper.mLayoutOrder[i];
+            final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
+            final int top = centerViewTop + offset;
+            final int bottom = top + mDecoratedChildHeight;
+            fillChildItem(start, top, end, bottom, layoutOrder, recycler, i);
+        }
+    }
+
+    private void fillDataHorizontal(final RecyclerView.Recycler recycler, final int width, final int height) {
+        final int top = (height - mDecoratedChildHeight) / 2;
+        final int bottom = top + mDecoratedChildHeight;
+
+        final int centerViewStart = (width - mDecoratedChildWidth) / 2;
+
+        for (int i = 0, count = mLayoutHelper.mLayoutOrder.length; i < count; ++i) {
+            final LayoutOrder layoutOrder = mLayoutHelper.mLayoutOrder[i];
+            final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
+            final int start = centerViewStart + offset;
+            final int end = start + mDecoratedChildWidth;
+            fillChildItem(start, top, end, bottom, layoutOrder, recycler, i);
+        }
     }
 
     private void removeAndRecycleUnusedViews(final LayoutHelper layoutHelper, final RecyclerView.Recycler recycler) {
@@ -562,6 +617,18 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
          * @param orientation              layoutManager orientation {@link #getLayoutDirection()}
          */
         void transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation);
+    }
+
+    public interface OnCenterItemSelectionListener {
+
+        /**
+         * Listener that will be called on every change of center item.
+         * This listener will be triggered on <b>every</b> layout operation if item was changed.
+         * Do not do any expensive operations in this method since this will effect scroll experience.
+         *
+         * @param adapterPosition current layout center item
+         */
+        void onCenterItemChanged(final int adapterPosition);
     }
 
     /**
