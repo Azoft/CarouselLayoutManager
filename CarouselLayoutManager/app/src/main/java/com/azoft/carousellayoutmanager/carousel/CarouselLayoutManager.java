@@ -241,7 +241,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     @CallSuper
     public void onLayoutChildren(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
         if (0 == state.getItemCount()) {
-            detachAndScrapAttachedViews(recycler);
+            removeAndRecycleAllViews(recycler);
             return;
         }
 
@@ -252,11 +252,10 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
             mDecoratedChildWidth = getDecoratedMeasuredWidth(view);
             mDecoratedChildHeight = getDecoratedMeasuredHeight(view);
-            detachAndScrapView(view, recycler);
+            removeAndRecycleView(view, recycler);
         }
 
         if (INVALID_POSITION != mPendingScrollPosition) {
-            removeAndRecycleAllViews(recycler);
             if (mPendingScrollPosition < state.getItemCount()) {
                 mLayoutHelper.mScrollOffset = VERTICAL == mOrientation ? mPendingScrollPosition * mDecoratedChildHeight :
                         mPendingScrollPosition * mDecoratedChildWidth;
@@ -271,8 +270,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
         final float currentScrollPosition = INVALID_POSITION == mPendingScrollPosition ? getCurrentScrollPosition() : mPendingScrollPosition;
         mPendingScrollPosition = INVALID_POSITION;
-        detachAndScrapAttachedViews(recycler);
         generateLayoutOrder(currentScrollPosition, state);
+        removeAndRecycleUnusedViews(mLayoutHelper, recycler);
 
         final int width = getWidthNoPadding();
         final int height = getHeightNoPadding();
@@ -305,6 +304,26 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         }
 
         recycler.clear();
+    }
+
+    private void removeAndRecycleUnusedViews(final LayoutHelper layoutHelper, final RecyclerView.Recycler recycler) {
+        final List<View> unusedViews = new ArrayList<>();
+        for (int i = 0, size = getChildCount(); i < size; ++i) {
+            final View child = getChildAt(i);
+            final ViewGroup.LayoutParams lp = child.getLayoutParams();
+            if (!(lp instanceof RecyclerView.LayoutParams)) {
+                unusedViews.add(child);
+                continue;
+            }
+            final int adapterPosition = ((RecyclerView.LayoutParams) lp).getViewAdapterPosition();
+            if (!layoutHelper.hasAdapterPosition(adapterPosition)) {
+                unusedViews.add(child);
+            }
+        }
+
+        for (final View view : unusedViews) {
+            removeAndRecycleView(view, recycler);
+        }
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")
@@ -401,14 +420,34 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private View layoutChild(final int start, final int top, final int end, final int bottom, final int position, @NonNull final RecyclerView.Recycler recycler) {
-        final View view = recycler.getViewForPosition(position);
+        final View view = findViewForPosition(recycler, position);
 
-        recycler.bindViewToPosition(view, position);
-        addView(view);
+        if (null == view.getParent()) {
+            addView(view);
+            measureChildWithMargins(view, 0, 0);
+        } else {
+            view.bringToFront();
+        }
 
-        measureChildWithMargins(view, 0, 0);
         view.layout(start, top, end, bottom);
 
+        return view;
+    }
+
+    private View findViewForPosition(final RecyclerView.Recycler recycler, final int position) {
+        for (int i = 0, size = getChildCount(); i < size; ++i) {
+            final View child = getChildAt(i);
+            final ViewGroup.LayoutParams lp = child.getLayoutParams();
+            if (!(lp instanceof RecyclerView.LayoutParams)) {
+                continue;
+            }
+            final int adapterPosition = ((RecyclerView.LayoutParams) lp).getViewAdapterPosition();
+            if (adapterPosition == position) {
+                return child;
+            }
+        }
+        final View view = recycler.getViewForPosition(position);
+        recycler.bindViewToPosition(view, position);
         return view;
     }
 
@@ -577,6 +616,23 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             final LayoutOrder item = mLayoutOrder[arrayPosition];
             item.mItemAdapterPosition = itemAdapterPosition;
             item.mItemPositionDiff = itemPositionDiff;
+        }
+
+        /**
+         * Checks is this screen Layout has this adapterPosition view in layout
+         *
+         * @param adapterPosition adapter position of item for future data filling logic
+         * @return true is adapterItem is in layout
+         */
+        public boolean hasAdapterPosition(final int adapterPosition) {
+            if (null != mLayoutOrder) {
+                for (final LayoutOrder layoutOrder : mLayoutOrder) {
+                    if (layoutOrder.mItemAdapterPosition == adapterPosition) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         @SuppressWarnings("VariableArgumentMethod")

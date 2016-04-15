@@ -3,12 +3,15 @@ package com.azoft.carousellayoutmanager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.azoft.carousellayoutmanager.carousel.CarouselLayoutManager;
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         final RecyclerView list = (RecyclerView) findViewById(R.id.list);
         //noinspection ConstantConditions
         list.setLayoutManager(layoutManager);
+//        list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         list.setHasFixedSize(true);
         list.setAdapter(new TestAdapter(this));
         list.addOnScrollListener(new CenterScrollListener());
@@ -73,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
             holder.mItem1TextView.setText(String.valueOf(position));
             holder.mItem2TextView.setText(String.valueOf(position));
             holder.itemView.setBackgroundColor(mColors[position]);
+            if (holder.mProgressBar instanceof ContentLoadingProgressBar) {
+                ((ContentLoadingProgressBar) holder.mProgressBar).show();
+            }
         }
 
         @Override
@@ -85,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         private final TextView mItem1TextView;
         private final TextView mItem2TextView;
+        private final ProgressBar mProgressBar;
 
         @SuppressWarnings("ParameterHidesMemberVariable")
         TestViewHolder(final View itemView) {
@@ -92,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
             mItem1TextView = (TextView) itemView.findViewById(R.id.c_item_1);
             mItem2TextView = (TextView) itemView.findViewById(R.id.c_item_2);
+            mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_bar);
         }
     }
 }

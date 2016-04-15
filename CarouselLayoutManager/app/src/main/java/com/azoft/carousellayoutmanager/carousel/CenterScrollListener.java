@@ -13,7 +13,13 @@ public class CenterScrollListener extends RecyclerView.OnScrollListener {
     @Override
     public void onScrollStateChanged(final RecyclerView recyclerView, final int newState) {
         super.onScrollStateChanged(recyclerView, newState);
-        final CarouselLayoutManager lm = (CarouselLayoutManager) recyclerView.getLayoutManager();
+        final RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (!(layoutManager instanceof CarouselLayoutManager)) {
+            mAutoSet = true;
+            return;
+        }
+
+        final CarouselLayoutManager lm = (CarouselLayoutManager) layoutManager;
         if (!mAutoSet) {
             if (RecyclerView.SCROLL_STATE_IDLE == newState) {
                 final int scrollNeeded = lm.getOffsetCenterView();
