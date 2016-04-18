@@ -1,4 +1,4 @@
-package com.azoft.carousellayoutmanager.carousel;
+package com.azoft.carousellayoutmanager;
 
 import android.graphics.PointF;
 import android.support.annotation.CallSuper;

@@ -1,4 +1,4 @@
-package com.azoft.carousellayoutmanager.carousel;
+package com.azoft.carousellayoutmanager;
 
 import android.content.Context;
 import android.support.v7.widget.LinearSmoothScroller;
