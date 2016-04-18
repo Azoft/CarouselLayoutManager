@@ -1,3 +1,16 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:2.0.0"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+        classpath "com.github.dcendents:android-maven-gradle-plugin:1.3"
+        classpath "com.github.dcendents:android-maven-plugin:1.2"
+    }
+}
+
 apply plugin: "com.android.library"
 
 apply plugin: 'com.github.dcendents.android-maven'
@@ -51,12 +64,18 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    configurations {
+        javadocDeps
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:support-v4:23.3.0"
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:design:23.3.0'
+    compile 'com.android.support:recyclerview-v7:23.3.0'
+    javadocDeps 'com.android.support:support-annotations:23.3.0'
+    javadocDeps 'com.android.support:recyclerview-v7:23.3.0'
 }
 
 task sourcesJar(type: Jar) {
@@ -65,9 +84,20 @@ task sourcesJar(type: Jar) {
 }
 
 task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
+    source = android.sourceSets.main.java.sourceFiles
+    classpath = files(android.bootClasspath)
+    exclude "**/internal/**"
+
+    if (JavaVersion.current().isJava8Compatible()) {
+        allprojects {
+            tasks.withType(Javadoc) {
+                options.addStringOption('Xdoclint:none', '-quiet')
+            }
+        }
+    }
+    classpath += configurations.javadocDeps
+    failOnError false
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    destinationDir = file("../javadoc/")
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -75,6 +105,13 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 artifacts {
+    archives javadocJar
     archives sourcesJar
-//    archives javadocJar
+}
+
+// Excluding aar artifacts from uploading
+configurations.archives.artifacts.with { archives ->
+    for (def iter = archives.iterator(); iter.hasNext();) {
+        if (iter.next().file =~ 'aar') iter.remove();
+    }
 }
