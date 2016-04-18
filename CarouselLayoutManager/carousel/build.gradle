@@ -20,7 +20,7 @@ apply plugin: 'com.jfrog.bintray'
 group = "com.azoft.carousellayoutmanager"
 def gitUrl = "https://github.com/Azoft/CarouselLayoutManager.git"
 // This is the library version used when deploying the artifact
-version = "1.0.1"
+version = "1.0.2"
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -84,18 +84,7 @@ task sourcesJar(type: Jar) {
 }
 
 task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.sourceFiles
-    classpath = files(android.bootClasspath)
-    exclude "**/internal/**"
-
-    if (JavaVersion.current().isJava8Compatible()) {
-        allprojects {
-            tasks.withType(Javadoc) {
-                options.addStringOption('Xdoclint:none', '-quiet')
-            }
-        }
-    }
-    classpath += configurations.javadocDeps
+    source = android.sourceSets.main.java.srcDirs
     failOnError false
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
@@ -105,8 +94,8 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 artifacts {
-    archives javadocJar
     archives sourcesJar
+    archives javadocJar
 }
 
 // Excluding aar artifacts from uploading
