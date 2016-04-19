@@ -18,11 +18,12 @@ apply plugin: 'com.jfrog.bintray'
 
 //////////////////////////////// Upload to BinTray ////////////////////////////////
 group = "com.azoft.carousellayoutmanager"
-def gitUrl = "https://github.com/Azoft/CarouselLayoutManager.git"
+final def siteUrl = 'https://github.com/Azoft/CarouselLayoutManager'
+final def gitUrl = "https://github.com/Azoft/CarouselLayoutManager.git"
 // This is the library version used when deploying the artifact
-version = "1.0.2"
+version = "1.0"
 
-Properties properties = new Properties()
+final Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 bintray {
@@ -42,6 +43,32 @@ bintray {
 install {
     repositories.mavenInstaller {
         pom.project {
+            packaging 'jar'
+
+            // Add your description here
+            name "CarouselLayoutManager for RecyclerView in Android. Description is here: https://github.com/Azoft/CarouselLayoutManager"
+            url siteUrl
+
+            // Set your license
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                }
+            }
+            developers {
+                developer {
+                    id 'azoft'
+                    name 'azoft'
+                    email 'android-mobile@azoft.com'
+                }
+            }
+            scm {
+                connection gitUrl
+                developerConnection gitUrl
+                url siteUrl
+
+            }
         }
     }
 }
