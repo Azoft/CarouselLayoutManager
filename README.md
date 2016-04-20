@@ -5,6 +5,12 @@ CarouselLayoutManager for RecyclerView
 
 ![Example](resources/carousel_work_small.gif "working example")
 
+## Integration with Gradle
+
+```
+    compile 'com.azoft.carousellayoutmanager:carousel:1.0'
+```
+
 ## Description
 
 This LayoutManager works only with fixedSized items in adapter.
