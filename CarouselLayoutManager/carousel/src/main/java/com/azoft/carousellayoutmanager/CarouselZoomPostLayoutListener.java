@@ -1,6 +1,7 @@
 package com.azoft.carousellayoutmanager;
 
 import android.support.annotation.NonNull;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 
 /**
@@ -17,13 +18,13 @@ public class CarouselZoomPostLayoutListener implements CarouselLayoutManager.Pos
         // because scaling will make view smaller in its center, then we should move this item to the top or bottom to make it visible
         if (CarouselLayoutManager.VERTICAL == orientation) {
             final float translateY = child.getHeight() * (1 - scale) / 2f;
-            child.setTranslationY(Math.signum(itemPositionToCenterDiff) * translateY);
+            ViewCompat.setTranslationY(child, Math.signum(itemPositionToCenterDiff) * translateY);
         } else {
             final float translateX = child.getWidth() * (1 - scale) / 2f;
-            child.setTranslationX(Math.signum(itemPositionToCenterDiff) * translateX);
+            ViewCompat.setTranslationX(child, Math.signum(itemPositionToCenterDiff) * translateX);
         }
 
-        child.setScaleX(scale);
-        child.setScaleY(scale);
+        ViewCompat.setScaleX(child, scale);
+        ViewCompat.setScaleY(child, scale);
     }
 }
