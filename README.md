@@ -8,7 +8,7 @@ CarouselLayoutManager for RecyclerView
 ## Integration with Gradle
 
 ```
-    compile 'com.azoft.carousellayoutmanager:carousel:1.0'
+    compile 'com.azoft.carousellayoutmanager:carousel:1.0.1'
 ```
 
 ## Description
