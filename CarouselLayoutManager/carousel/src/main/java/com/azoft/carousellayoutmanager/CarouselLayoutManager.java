@@ -56,6 +56,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     private final List<OnCenterItemSelectionListener> mOnCenterItemSelectionListeners = new ArrayList<>();
     private int mCenterItemPosition = INVALID_POSITION;
+    private int mItemsCount;
 
     /**
      * @param orientation should be {@link #VERTICAL} or {@link #HORIZONTAL}
@@ -191,7 +192,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         if (0 == getChildCount()) {
             return null;
         }
-        final int direction = targetPosition < getCurrentScrollPosition() ? -1 : 1;
+        final float currentScrollPosition = makeScrollPositionInRange0ToCount(getCurrentScrollPosition(), mItemsCount);
+        final int direction = targetPosition < currentScrollPosition ? -1 : 1;
         if (HORIZONTAL == mOrientation) {
             return new PointF(direction, 0);
         } else {
@@ -370,8 +372,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
                 unusedViews.add(child);
                 continue;
             }
-            final int adapterPosition = ((RecyclerView.LayoutParams) lp).getViewAdapterPosition();
+            final RecyclerView.LayoutParams recyclerViewLp = (RecyclerView.LayoutParams) lp;
+            final int adapterPosition = recyclerViewLp.getViewAdapterPosition();
             if (!layoutHelper.hasAdapterPosition(adapterPosition)) {
+                unusedViews.add(child);
+            }
+            if (recyclerViewLp.isItemChanged()) {
                 unusedViews.add(child);
             }
         }
@@ -392,7 +398,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     /**
      * @return current scroll position of center item. this value can be in any range if it is cycle layout.
-     * if this is not, that then it is in [0, {@link #getItemCount() - 1}]
+     * if this is not, that then it is in [0, {@link #mItemsCount - 1}]
      */
     private float getCurrentScrollPosition() {
         final int fullScrollSize = getMaxScrollOffset();
@@ -406,7 +412,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
      * @return maximum scroll value to fill up all items in layout. Generally this is only needed for non cycle layouts.
      */
     private int getMaxScrollOffset() {
-        return getScrollItemSize() * (getItemCount() - 1);
+        return getScrollItemSize() * (mItemsCount - 1);
     }
 
     private static void performViewPostLayoutChanges(@NonNull final PostLayoutListener postLayout, @NonNull final View view, final float itemPositionToCenterDiff, final int orientation) {
@@ -425,31 +431,31 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
      * @see #getCurrentScrollPosition()
      */
     private void generateLayoutOrder(final float currentScrollPosition, @NonNull final RecyclerView.State state) {
-        final int count = state.getItemCount();
-        final float absCurrentScrollPosition = makeScrollPositionInRange0ToCount(currentScrollPosition, count);
+        mItemsCount = state.getItemCount();
+        final float absCurrentScrollPosition = makeScrollPositionInRange0ToCount(currentScrollPosition, mItemsCount);
         final int centerItem = Math.round(absCurrentScrollPosition);
 
-        if (mCircleLayout && 1 < count) {
-            final int layoutCount = Math.min(mLayoutHelper.mMaxVisibleItems * 2 + 3, count);// + 3 = 1 (center item) + 2 (addition bellow maxVisibleItems)
+        if (mCircleLayout && 1 < mItemsCount) {
+            final int layoutCount = Math.min(mLayoutHelper.mMaxVisibleItems * 2 + 3, mItemsCount);// + 3 = 1 (center item) + 2 (addition bellow maxVisibleItems)
 
             mLayoutHelper.initLayoutOrder(layoutCount);
 
             final int countLayoutHalf = layoutCount / 2;
             // before center item
             for (int i = 1; i <= countLayoutHalf; ++i) {
-                final int position = Math.round(absCurrentScrollPosition - i + count) % count;
+                final int position = Math.round(absCurrentScrollPosition - i + mItemsCount) % mItemsCount;
                 mLayoutHelper.setLayoutOrder(countLayoutHalf - i, position, centerItem - absCurrentScrollPosition - i);
             }
             // after center item
             for (int i = layoutCount - 1; i >= countLayoutHalf + 1; --i) {
-                final int position = Math.round(absCurrentScrollPosition - i + layoutCount) % count;
+                final int position = Math.round(absCurrentScrollPosition - i + layoutCount) % mItemsCount;
                 mLayoutHelper.setLayoutOrder(i - 1, position, centerItem - absCurrentScrollPosition + layoutCount - i);
             }
             mLayoutHelper.setLayoutOrder(layoutCount - 1, centerItem, centerItem - absCurrentScrollPosition);
 
         } else {
             final int firstVisible = Math.max(centerItem - mLayoutHelper.mMaxVisibleItems - 1, 0);
-            final int lastVisible = Math.min(centerItem + mLayoutHelper.mMaxVisibleItems + 1, count - 1);
+            final int lastVisible = Math.min(centerItem + mLayoutHelper.mMaxVisibleItems + 1, mItemsCount - 1);
             final int layoutCount = lastVisible - firstVisible + 1;
 
             mLayoutHelper.initLayoutOrder(layoutCount);
@@ -580,7 +586,17 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     int getOffsetForCurrentView(@NonNull final View view) {
         final int position = getPosition(view);
-        return mLayoutHelper.mScrollOffset - position * getScrollItemSize();
+        final int fullCircles = mLayoutHelper.mScrollOffset / (mItemsCount * getScrollItemSize());
+        int fullOffset = fullCircles * mItemsCount * getScrollItemSize();
+        if (0 > mLayoutHelper.mScrollOffset) {
+            fullOffset -= 1;
+        }
+
+        if (0 == fullOffset || 0 < Math.signum(fullOffset)) {
+            return mLayoutHelper.mScrollOffset - position * getScrollItemSize() - fullOffset;
+        } else {
+            return mLayoutHelper.mScrollOffset + position * getScrollItemSize() - fullOffset;
+        }
     }
 
     /**
