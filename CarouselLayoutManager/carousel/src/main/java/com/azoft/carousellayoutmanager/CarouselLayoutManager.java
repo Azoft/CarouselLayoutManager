@@ -138,12 +138,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public boolean canScrollHorizontally() {
-        return HORIZONTAL == mOrientation;
+        return 0 != getChildCount() && HORIZONTAL == mOrientation;
     }
 
     @Override
     public boolean canScrollVertically() {
-        return VERTICAL == mOrientation;
+        return 0 != getChildCount() && VERTICAL == mOrientation;
     }
 
     /**
