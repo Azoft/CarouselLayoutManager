@@ -1,4 +1,4 @@
-CarouselLayoutManager for RecyclerView
+Android LayoutManager for RecyclerView to support Carousel view style
 ======================
 
 ## Examples
