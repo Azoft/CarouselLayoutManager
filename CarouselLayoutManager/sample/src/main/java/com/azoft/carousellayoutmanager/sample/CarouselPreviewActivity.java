@@ -60,20 +60,27 @@ public class CarouselPreviewActivity extends AppCompatActivity {
             }
         });
 
-        // fab button will scroll to 5'th position
+        // fab button will add element to the end of the list
         binding.fabScroll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                binding.list.smoothScrollToPosition(5);
+                final int itemToRemove = adapter.mItemsCount;
+                if (10 != itemToRemove) {
+                    adapter.mItemsCount++;
+                    adapter.notifyItemInserted(itemToRemove);
+                }
             }
         });
 
-        //noinspection ConstantConditions
+        // fab button will remove element from the end of the list
         binding.fabChangeData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                adapter.mColors[5] = Color.BLACK;
-                adapter.notifyItemChanged(5);
+                final int itemToRemove = adapter.mItemsCount - 1;
+                if (0 <= itemToRemove) {
+                    adapter.mItemsCount--;
+                    adapter.notifyItemRemoved(itemToRemove);
+                }
             }
         });
     }
@@ -83,10 +90,11 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         @SuppressWarnings("UnsecureRandomNumberGeneration")
         private final Random mRandom = new Random();
         private final int[] mColors;
+        private int mItemsCount = 10;
 
         TestAdapter() {
-            mColors = new int[getItemCount()];
-            for (int i = 0; i < getItemCount(); ++i) {
+            mColors = new int[10];
+            for (int i = 0; 10 > i; ++i) {
                 //noinspection MagicNumber
                 mColors[i] = Color.argb(255, mRandom.nextInt(256), mRandom.nextInt(256), mRandom.nextInt(256));
             }
@@ -106,7 +114,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 10;
+            return mItemsCount;
         }
     }
 
