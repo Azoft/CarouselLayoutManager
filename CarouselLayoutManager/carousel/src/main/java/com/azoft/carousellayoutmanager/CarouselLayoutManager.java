@@ -1,6 +1,8 @@
 package com.azoft.carousellayoutmanager;
 
 import android.graphics.PointF;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,7 +33,7 @@ import java.util.List;
  * So like layout_height is not {@link ViewGroup.LayoutParams#MATCH_PARENT} for {@link CarouselLayoutManager#VERTICAL}<br />
  * <br />
  */
-@SuppressWarnings("ClassWithTooManyMethods")
+@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass"})
 public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
@@ -57,6 +59,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     private final List<OnCenterItemSelectionListener> mOnCenterItemSelectionListeners = new ArrayList<>();
     private int mCenterItemPosition = INVALID_POSITION;
     private int mItemsCount;
+
+    private CarouselSavedState mPendingCarouselSavedState;
 
     /**
      * @param orientation should be {@link #VERTICAL} or {@link #HORIZONTAL}
@@ -236,6 +240,18 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         final int resultScroll;
         if (mCircleLayout) {
             resultScroll = diff;
+
+            mLayoutHelper.mScrollOffset += resultScroll;
+
+            final int maxOffset = getScrollItemSize() * mItemsCount;
+            while (0 > mLayoutHelper.mScrollOffset) {
+                mLayoutHelper.mScrollOffset += maxOffset;
+            }
+            while (mLayoutHelper.mScrollOffset > maxOffset) {
+                mLayoutHelper.mScrollOffset -= maxOffset;
+            }
+
+            mLayoutHelper.mScrollOffset -= resultScroll;
         } else {
             final int maxOffset = getMaxScrollOffset();
 
@@ -268,12 +284,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     public void onLayoutChildren(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
         if (0 == state.getItemCount()) {
             removeAndRecycleAllViews(recycler);
-            notifyOnItemSelectionListeners(INVALID_POSITION);
+            selectItemCenterPosition(INVALID_POSITION);
             return;
-        }
-        if (state.didStructureChange()) {
-            // seance we don't know if views are actual now. so we should delete all cached views.
-            removeAndRecycleAllViews(recycler);
         }
 
         if (null == mDecoratedChildWidth) {
@@ -287,15 +299,21 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         }
 
         if (INVALID_POSITION != mPendingScrollPosition) {
-            if (mPendingScrollPosition < state.getItemCount()) {
-                mLayoutHelper.mScrollOffset = VERTICAL == mOrientation ? mPendingScrollPosition * mDecoratedChildHeight :
-                        mPendingScrollPosition * mDecoratedChildWidth;
-            } else {
-                mPendingScrollPosition = INVALID_POSITION;
-            }
+            mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingScrollPosition, state);
+            mPendingScrollPosition = INVALID_POSITION;
+        } else if (null != mPendingCarouselSavedState) {
+            mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingCarouselSavedState.mCenterItemPosition, state);
+            mPendingCarouselSavedState = null;
+        } else if (state.didStructureChange() && INVALID_POSITION != mCenterItemPosition) {
+            mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mCenterItemPosition, state);
         }
 
         fillData(recycler, state);
+    }
+
+    private int calculateScrollForSelectingPosition(final int itemPosition, final RecyclerView.State state) {
+        final int fixedItemPosition = itemPosition < state.getItemCount() ? itemPosition : state.getItemCount() - 1;
+        return VERTICAL == mOrientation ? fixedItemPosition * mDecoratedChildHeight : fixedItemPosition * mDecoratedChildWidth;
     }
 
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
@@ -322,11 +340,11 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         final int centerItem = Math.round(absCurrentScrollPosition);
 
         if (mCenterItemPosition != centerItem) {
-            notifyOnItemSelectionListeners(centerItem);
+            selectItemCenterPosition(centerItem);
         }
     }
 
-    private void notifyOnItemSelectionListeners(final int centerItem) {
+    private void selectItemCenterPosition(final int centerItem) {
         mCenterItemPosition = centerItem;
         for (final OnCenterItemSelectionListener onCenterItemSelectionListener : mOnCenterItemSelectionListeners) {
             onCenterItemSelectionListener.onCenterItemChanged(centerItem);
@@ -364,35 +382,43 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private void removeAndRecycleUnusedViews(final LayoutHelper layoutHelper, final RecyclerView.Recycler recycler) {
-        final List<View> unusedViews = new ArrayList<>();
+        final List<View> viewsToRemove = new ArrayList<>();
         for (int i = 0, size = getChildCount(); i < size; ++i) {
             final View child = getChildAt(i);
             final ViewGroup.LayoutParams lp = child.getLayoutParams();
             if (!(lp instanceof RecyclerView.LayoutParams)) {
-                unusedViews.add(child);
+                viewsToRemove.add(child);
                 continue;
             }
             final RecyclerView.LayoutParams recyclerViewLp = (RecyclerView.LayoutParams) lp;
             final int adapterPosition = recyclerViewLp.getViewAdapterPosition();
-            if (!layoutHelper.hasAdapterPosition(adapterPosition)) {
-                unusedViews.add(child);
-            }
-            if (recyclerViewLp.isItemChanged()) {
-                unusedViews.add(child);
+            if (recyclerViewLp.isItemRemoved() || !layoutHelper.hasAdapterPosition(adapterPosition)) {
+                viewsToRemove.add(child);
             }
         }
 
-        for (final View view : unusedViews) {
+
+        for (final View view : viewsToRemove) {
             removeAndRecycleView(view, recycler);
         }
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")
     private void fillChildItem(final int start, final int top, final int end, final int bottom, @NonNull final LayoutOrder layoutOrder, @NonNull final RecyclerView.Recycler recycler, final int i) {
-        final View view = layoutChild(start, top, end, bottom, layoutOrder.mItemAdapterPosition, recycler);
+        final View view = bindChild(layoutOrder.mItemAdapterPosition, recycler);
         ViewCompat.setElevation(view, i);
+        ItemTransformation transformation = null;
         if (null != mViewPostLayout) {
-            performViewPostLayoutChanges(mViewPostLayout, view, layoutOrder.mItemPositionDiff, mOrientation);
+            transformation = mViewPostLayout.transformChild(view, layoutOrder.mItemPositionDiff, mOrientation);
+        }
+        if (null == transformation) {
+            view.layout(start, top, end, bottom);
+        } else {
+            view.layout(Math.round(start + transformation.mTranslationX), Math.round(top + transformation.mTranslationY),
+                    Math.round(end + transformation.mTranslationX), Math.round(bottom + transformation.mTranslationY));
+
+            ViewCompat.setScaleX(view, transformation.mScaleX);
+            ViewCompat.setScaleY(view, transformation.mScaleY);
         }
     }
 
@@ -413,10 +439,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
      */
     private int getMaxScrollOffset() {
         return getScrollItemSize() * (mItemsCount - 1);
-    }
-
-    private static void performViewPostLayoutChanges(@NonNull final PostLayoutListener postLayout, @NonNull final View view, final float itemPositionToCenterDiff, final int orientation) {
-        postLayout.transformChild(view, itemPositionToCenterDiff, orientation);
     }
 
     /**
@@ -480,17 +502,17 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         return getHeight() - getPaddingEnd() - getPaddingStart();
     }
 
-    private View layoutChild(final int start, final int top, final int end, final int bottom, final int position, @NonNull final RecyclerView.Recycler recycler) {
+    private View bindChild(final int position, @NonNull final RecyclerView.Recycler recycler) {
         final View view = findViewForPosition(recycler, position);
 
         if (null == view.getParent()) {
             addView(view);
+            view.requestLayout();
             measureChildWithMargins(view, 0, 0);
         } else {
-            view.bringToFront();
+            detachView(view);
+            attachView(view);
         }
-
-        view.layout(start, top, end, bottom);
 
         return view;
     }
@@ -502,8 +524,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             if (!(lp instanceof RecyclerView.LayoutParams)) {
                 continue;
             }
-            final int adapterPosition = ((RecyclerView.LayoutParams) lp).getViewAdapterPosition();
+            final RecyclerView.LayoutParams recyclerLp = (RecyclerView.LayoutParams) lp;
+            final int adapterPosition = recyclerLp.getViewAdapterPosition();
             if (adapterPosition == position) {
+                if (recyclerLp.isItemChanged()) {
+                    recycler.bindViewToPosition(child, position);
+                }
                 return child;
             }
         }
@@ -577,6 +603,27 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         }
     }
 
+    @Override
+    public Parcelable onSaveInstanceState() {
+        if (null != mPendingCarouselSavedState) {
+            return new CarouselSavedState(mPendingCarouselSavedState);
+        }
+        final CarouselSavedState savedState = new CarouselSavedState(super.onSaveInstanceState());
+        savedState.mCenterItemPosition = mCenterItemPosition;
+        return savedState;
+    }
+
+    @Override
+    public void onRestoreInstanceState(final Parcelable state) {
+        if (state instanceof CarouselSavedState) {
+            mPendingCarouselSavedState = (CarouselSavedState) state;
+
+            super.onRestoreInstanceState(mPendingCarouselSavedState.mSuperState);
+        } else {
+            super.onRestoreInstanceState(state);
+        }
+    }
+
     /**
      * @return Scroll offset from nearest item from center
      */
@@ -632,7 +679,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
          * @param itemPositionToCenterDiff view center line difference to layout center. if > 0 then this item is bellow layout center line, else if not
          * @param orientation              layoutManager orientation {@link #getLayoutDirection()}
          */
-        void transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation);
+        ItemTransformation transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation);
     }
 
     public interface OnCenterItemSelectionListener {
@@ -762,6 +809,49 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
          * Item center difference to layout center. If center of item is bellow layout center, then this value is greater then 0, else it is less.
          */
         private float mItemPositionDiff;
+    }
 
+    public static class CarouselSavedState implements Parcelable {
+
+        private final Parcelable mSuperState;
+        private int mCenterItemPosition;
+
+        public CarouselSavedState(@Nullable final Parcelable superState) {
+            mSuperState = superState;
+        }
+
+        private CarouselSavedState(@NonNull final Parcel in) {
+            mSuperState = in.readParcelable(Parcelable.class.getClassLoader());
+            mCenterItemPosition = in.readInt();
+        }
+
+        public CarouselSavedState(@NonNull final CarouselSavedState other) {
+            mSuperState = other.mSuperState;
+            mCenterItemPosition = other.mCenterItemPosition;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(final Parcel dest, final int flags) {
+            dest.writeParcelable(mSuperState, flags);
+            dest.writeInt(mCenterItemPosition);
+        }
+
+        public static final Parcelable.Creator<CarouselSavedState> CREATOR
+                = new Parcelable.Creator<CarouselSavedState>() {
+            @Override
+            public CarouselSavedState createFromParcel(final Parcel source) {
+                return new CarouselSavedState(source);
+            }
+
+            @Override
+            public CarouselSavedState[] newArray(final int size) {
+                return new CarouselSavedState[size];
+            }
+        };
     }
 }

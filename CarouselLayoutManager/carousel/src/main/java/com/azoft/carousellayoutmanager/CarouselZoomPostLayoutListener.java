@@ -1,7 +1,6 @@
 package com.azoft.carousellayoutmanager;
 
 import android.support.annotation.NonNull;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 
 /**
@@ -12,19 +11,22 @@ import android.view.View;
 public class CarouselZoomPostLayoutListener implements CarouselLayoutManager.PostLayoutListener {
 
     @Override
-    public void transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation) {
+    public ItemTransformation transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation) {
         final float scale = (float) (4 * (2 * -StrictMath.atan(Math.abs(itemPositionToCenterDiff) + 1.0) / Math.PI + 1) / 2);
 
         // because scaling will make view smaller in its center, then we should move this item to the top or bottom to make it visible
+        final float translateY;
+        final float translateX;
         if (CarouselLayoutManager.VERTICAL == orientation) {
-            final float translateY = child.getHeight() * (1 - scale) / 2f;
-            ViewCompat.setTranslationY(child, Math.signum(itemPositionToCenterDiff) * translateY);
+            final float translateYGeneral = child.getMeasuredHeight() * (1 - scale) / 2f;
+            translateY = Math.signum(itemPositionToCenterDiff) * translateYGeneral;
+            translateX = 0;
         } else {
-            final float translateX = child.getWidth() * (1 - scale) / 2f;
-            ViewCompat.setTranslationX(child, Math.signum(itemPositionToCenterDiff) * translateX);
+            final float translateXGeneral = child.getMeasuredWidth() * (1 - scale) / 2f;
+            translateX = Math.signum(itemPositionToCenterDiff) * translateXGeneral;
+            translateY = 0;
         }
 
-        ViewCompat.setScaleX(child, scale);
-        ViewCompat.setScaleY(child, scale);
+        return new ItemTransformation(scale, scale, translateX, translateY);
     }
 }
