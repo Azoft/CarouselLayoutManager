@@ -296,6 +296,10 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             mDecoratedChildWidth = getDecoratedMeasuredWidth(view);
             mDecoratedChildHeight = getDecoratedMeasuredHeight(view);
             removeAndRecycleView(view, recycler);
+
+            if (INVALID_POSITION == mPendingScrollPosition && null == mPendingCarouselSavedState) {
+                mPendingScrollPosition = mCenterItemPosition;
+            }
         }
 
         if (INVALID_POSITION != mPendingScrollPosition) {
