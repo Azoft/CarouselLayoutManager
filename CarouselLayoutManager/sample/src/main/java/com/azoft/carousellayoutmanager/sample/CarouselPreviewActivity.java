@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.azoft.carousellayoutmanager.CarouselLayoutManager;
 import com.azoft.carousellayoutmanager.CarouselZoomPostLayoutListener;
@@ -44,19 +43,11 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
         layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
 
-            private Toast mToast;
-
             @Override
             public void onCenterItemChanged(final int adapterPosition) {
-                if (null != mToast) {
-                    mToast.cancel();
-                }
-                // uncomment lines bellow to show center item in toast.
-                // but be aware that showing toast can be long operation, so scrolling may freeze
-/*
-                mToast = Toast.makeText(MainActivity.this, String.valueOf(adapterPosition), Toast.LENGTH_LONG);
-                mToast.show();
-*/
+                final int value = adapter.mPosition[adapterPosition];
+                adapter.mPosition[adapterPosition] = (value % 10) + (value / 10 + 1) * 10;
+                adapter.notifyItemChanged(adapterPosition);
             }
         });
 
@@ -90,13 +81,16 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         @SuppressWarnings("UnsecureRandomNumberGeneration")
         private final Random mRandom = new Random();
         private final int[] mColors;
+        private final int[] mPosition;
         private int mItemsCount = 10;
 
         TestAdapter() {
             mColors = new int[10];
+            mPosition = new int[10];
             for (int i = 0; 10 > i; ++i) {
                 //noinspection MagicNumber
                 mColors[i] = Color.argb(255, mRandom.nextInt(256), mRandom.nextInt(256), mRandom.nextInt(256));
+                mPosition[i] = i;
             }
         }
 
@@ -107,8 +101,8 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final TestViewHolder holder, final int position) {
-            holder.mItemViewBinding.cItem1.setText(String.valueOf(position));
-            holder.mItemViewBinding.cItem2.setText(String.valueOf(position));
+            holder.mItemViewBinding.cItem1.setText(String.valueOf(mPosition[position]));
+            holder.mItemViewBinding.cItem2.setText(String.valueOf(mRandom.nextGaussian()));
             holder.itemView.setBackgroundColor(mColors[position]);
         }
 
