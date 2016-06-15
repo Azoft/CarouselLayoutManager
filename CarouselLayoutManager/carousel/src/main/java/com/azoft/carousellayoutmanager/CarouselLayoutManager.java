@@ -1,6 +1,8 @@
 package com.azoft.carousellayoutmanager;
 
 import android.graphics.PointF;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.CallSuper;
@@ -127,8 +129,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public RecyclerView.LayoutParams generateDefaultLayoutParams() {
-        return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        return new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     /**
@@ -344,12 +345,17 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         final int centerItem = Math.round(absCurrentScrollPosition);
 
         if (mCenterItemPosition != centerItem) {
-            selectItemCenterPosition(centerItem);
+            mCenterItemPosition = centerItem;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    selectItemCenterPosition(centerItem);
+                }
+            });
         }
     }
 
     private void selectItemCenterPosition(final int centerItem) {
-        mCenterItemPosition = centerItem;
         for (final OnCenterItemSelectionListener onCenterItemSelectionListener : mOnCenterItemSelectionListeners) {
             onCenterItemSelectionListener.onCenterItemChanged(centerItem);
         }
@@ -533,6 +539,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             if (adapterPosition == position) {
                 if (recyclerLp.isItemChanged()) {
                     recycler.bindViewToPosition(child, position);
+                    measureChildWithMargins(child, 0, 0);
                 }
                 return child;
             }

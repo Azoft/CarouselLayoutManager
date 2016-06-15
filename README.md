@@ -8,7 +8,7 @@ Android LayoutManager for RecyclerView to support Carousel view style
 ## Integration with Gradle
 
 ```
-    compile 'com.azoft.carousellayoutmanager:carousel:1.1.1'
+    compile 'com.azoft.carousellayoutmanager:carousel:1.1.2'
 ```
 
 ## Description

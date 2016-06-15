@@ -12,7 +12,7 @@ public class CarouselZoomPostLayoutListener implements CarouselLayoutManager.Pos
 
     @Override
     public ItemTransformation transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation) {
-        final float scale = (float) (4 * (2 * -StrictMath.atan(Math.abs(itemPositionToCenterDiff) + 1.0) / Math.PI + 1) / 2);
+        final float scale = (float) (2 * (2 * -StrictMath.atan(Math.abs(itemPositionToCenterDiff) + 1.0) / Math.PI + 1));
 
         // because scaling will make view smaller in its center, then we should move this item to the top or bottom to make it visible
         final float translateY;
