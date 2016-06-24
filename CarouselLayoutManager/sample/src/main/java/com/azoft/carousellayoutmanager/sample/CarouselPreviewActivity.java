@@ -27,29 +27,11 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolbar);
 
-        // create layout manager with needed params: vertical, cycle
-        final CarouselLayoutManager layoutManager = new CarouselLayoutManager(CarouselLayoutManager.VERTICAL, true);
-        // enable zoom effect. this line can be customized
-        layoutManager.setPostLayoutListener(new CarouselZoomPostLayoutListener());
-
-        binding.list.setLayoutManager(layoutManager);
-        // we expect only fixed sized item for now
-        binding.list.setHasFixedSize(true);
-        // sample adapter with random data
         final TestAdapter adapter = new TestAdapter();
-        binding.list.setAdapter(adapter);
-        // enable center post scrolling
-        binding.list.addOnScrollListener(new CenterScrollListener());
 
-        layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
-
-            @Override
-            public void onCenterItemChanged(final int adapterPosition) {
-                final int value = adapter.mPosition[adapterPosition];
-                adapter.mPosition[adapterPosition] = (value % 10) + (value / 10 + 1) * 10;
-                adapter.notifyItemChanged(adapterPosition);
-            }
-        });
+        // create layout manager with needed params: vertical, cycle
+        initRecyclerView(binding.listHorizontal, new CarouselLayoutManager(CarouselLayoutManager.HORIZONTAL, true), adapter);
+        initRecyclerView(binding.listVertical, new CarouselLayoutManager(CarouselLayoutManager.VERTICAL, true), adapter);
 
         // fab button will add element to the end of the list
         binding.fabScroll.setOnClickListener(new View.OnClickListener() {
@@ -72,6 +54,29 @@ public class CarouselPreviewActivity extends AppCompatActivity {
                     adapter.mItemsCount--;
                     adapter.notifyItemRemoved(itemToRemove);
                 }
+            }
+        });
+    }
+
+    private void initRecyclerView(final RecyclerView recyclerView, final CarouselLayoutManager layoutManager, final TestAdapter adapter) {
+        // enable zoom effect. this line can be customized
+        layoutManager.setPostLayoutListener(new CarouselZoomPostLayoutListener());
+
+        recyclerView.setLayoutManager(layoutManager);
+        // we expect only fixed sized item for now
+        recyclerView.setHasFixedSize(true);
+        // sample adapter with random data
+        recyclerView.setAdapter(adapter);
+        // enable center post scrolling
+        recyclerView.addOnScrollListener(new CenterScrollListener());
+
+        layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
+
+            @Override
+            public void onCenterItemChanged(final int adapterPosition) {
+                final int value = adapter.mPosition[adapterPosition];
+                adapter.mPosition[adapterPosition] = (value % 10) + (value / 10 + 1) * 10;
+                adapter.notifyItemChanged(adapterPosition);
             }
         });
     }
