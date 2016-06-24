@@ -70,6 +70,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         // enable center post scrolling
         recyclerView.addOnScrollListener(new CenterScrollListener());
 
+/*
         layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
 
             @Override
@@ -79,6 +80,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
                 adapter.notifyItemChanged(adapterPosition);
             }
         });
+*/
     }
 
     private static final class TestAdapter extends RecyclerView.Adapter<TestViewHolder> {
