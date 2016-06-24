@@ -107,7 +107,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final TestViewHolder holder, final int position) {
             holder.mItemViewBinding.cItem1.setText(String.valueOf(mPosition[position]));
-            holder.mItemViewBinding.cItem2.setText(String.valueOf(mRandom.nextGaussian()));
+            holder.mItemViewBinding.cItem2.setText(String.valueOf(mPosition[position]));
             holder.itemView.setBackgroundColor(mColors[position]);
         }
 
