@@ -5,6 +5,8 @@ Android LayoutManager for RecyclerView to support Carousel view style
 
 ![Example](resources/carousel_work_small.gif "working example")
 
+![Example](resources/carousel_double_work_small.gif "working example")
+
 ## Integration with Gradle
 
 ```
