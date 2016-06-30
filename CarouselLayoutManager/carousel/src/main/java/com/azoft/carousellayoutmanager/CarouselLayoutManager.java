@@ -309,6 +309,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         if (INVALID_POSITION != mPendingScrollPosition) {
             mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingScrollPosition, state);
             mPendingScrollPosition = INVALID_POSITION;
+            mPendingCarouselSavedState = null;
         } else if (null != mPendingCarouselSavedState) {
             mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingCarouselSavedState.mCenterItemPosition, state);
             mPendingCarouselSavedState = null;
@@ -325,8 +326,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final boolean childMeasuringNeeded) {
-        final float currentScrollPosition = INVALID_POSITION == mPendingScrollPosition ? getCurrentScrollPosition() : mPendingScrollPosition;
-        mPendingScrollPosition = INVALID_POSITION;
+        final float currentScrollPosition = getCurrentScrollPosition();
         generateLayoutOrder(currentScrollPosition, state);
         removeAndRecycleUnusedViews(mLayoutHelper, recycler);
 
@@ -522,8 +522,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             addView(view);
             measureChildWithMargins(view, 0, 0);
         } else {
-            detachView(view);
-            attachView(view);
             if (childMeasuringNeeded) {
                 measureChildWithMargins(view, 0, 0);
             }
