@@ -175,6 +175,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     @SuppressWarnings("RefusedBequest")
     @Override
     public void scrollToPosition(final int position) {
+        if (0 > position) {
+            throw new IllegalArgumentException("position can't be less then 0. position is : " + position);
+        }
+        if (position >= mItemsCount) {
+            throw new IllegalArgumentException("position can't be great then adapter items count. position is : " + position);
+        }
         mPendingScrollPosition = position;
         requestLayout();
     }
@@ -182,6 +188,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     @SuppressWarnings("RefusedBequest")
     @Override
     public void smoothScrollToPosition(@NonNull final RecyclerView recyclerView, @NonNull final RecyclerView.State state, final int position) {
+        if (0 > position) {
+            throw new IllegalArgumentException("position can't be less then 0. position is : " + position);
+        }
+        if (position >= state.getItemCount()) {
+            throw new IllegalArgumentException("position can't be great then adapter items count. position is : " + position);
+        }
         final CarouselSmoothScroller mySmoothScroller =
                 new CarouselSmoothScroller(recyclerView.getContext()) {
                     @Override
