@@ -30,7 +30,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         final TestAdapter adapter = new TestAdapter();
 
         // create layout manager with needed params: vertical, cycle
-        initRecyclerView(binding.listHorizontal, new CarouselLayoutManager(CarouselLayoutManager.HORIZONTAL, true), adapter);
+        initRecyclerView(binding.listHorizontal, new CarouselLayoutManager(CarouselLayoutManager.HORIZONTAL, false), adapter);
         initRecyclerView(binding.listVertical, new CarouselLayoutManager(CarouselLayoutManager.VERTICAL, true), adapter);
 
         // fab button will add element to the end of the list
@@ -70,7 +70,6 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         // enable center post scrolling
         recyclerView.addOnScrollListener(new CenterScrollListener());
 
-/*
         layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
 
             @Override
@@ -80,7 +79,6 @@ public class CarouselPreviewActivity extends AppCompatActivity {
                 adapter.notifyItemChanged(adapterPosition);
             }
         });
-*/
     }
 
     private static final class TestAdapter extends RecyclerView.Adapter<TestViewHolder> {
