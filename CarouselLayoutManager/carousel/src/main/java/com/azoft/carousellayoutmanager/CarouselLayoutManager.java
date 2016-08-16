@@ -534,6 +534,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             addView(view);
             measureChildWithMargins(view, 0, 0);
         } else {
+            view.bringToFront();
             if (childMeasuringNeeded) {
                 measureChildWithMargins(view, 0, 0);
             }
