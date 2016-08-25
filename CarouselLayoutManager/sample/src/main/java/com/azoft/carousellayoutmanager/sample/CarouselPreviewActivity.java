@@ -3,11 +3,13 @@ package com.azoft.carousellayoutmanager.sample;
 import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.azoft.carousellayoutmanager.CarouselLayoutManager;
 import com.azoft.carousellayoutmanager.CarouselZoomPostLayoutListener;
@@ -69,6 +71,16 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         // enable center post scrolling
         recyclerView.addOnScrollListener(new CenterScrollListener());
+        // enable center post touching on item and item click listener
+        layoutManager.setOnItemClickListener(recyclerView,
+                new CarouselLayoutManager.OnCenterItemClickListener() {
+                    @Override
+                    public void onCenterItemClicked(@NonNull RecyclerView recyclerView, int position,
+                            @NonNull View view) {
+                        final String msg = String.format("Item %1$d was clicked", position);
+                        Toast.makeText(CarouselPreviewActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
 
