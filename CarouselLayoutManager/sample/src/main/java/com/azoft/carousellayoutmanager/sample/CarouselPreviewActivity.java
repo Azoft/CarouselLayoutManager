@@ -74,9 +74,11 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
             @Override
             public void onCenterItemChanged(final int adapterPosition) {
-                final int value = adapter.mPosition[adapterPosition];
-                adapter.mPosition[adapterPosition] = (value % 10) + (value / 10 + 1) * 10;
-                adapter.notifyItemChanged(adapterPosition);
+                if (CarouselLayoutManager.INVALID_POSITION != adapterPosition) {
+                    final int value = adapter.mPosition[adapterPosition];
+                    adapter.mPosition[adapterPosition] = (value % 10) + (value / 10 + 1) * 10;
+                    adapter.notifyItemChanged(adapterPosition);
+                }
             }
         });
     }
