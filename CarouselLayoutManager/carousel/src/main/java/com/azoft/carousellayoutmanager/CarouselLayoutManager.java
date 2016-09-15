@@ -41,7 +41,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
     public static final int VERTICAL = OrientationHelper.VERTICAL;
 
-    private static final int INVALID_POSITION = -1;
+    public static final int INVALID_POSITION = -1;
 
     public static final int MAX_VISIBLE_ITEMS = 2;
     private static final boolean CIRCLE_LAYOUT = false;
@@ -291,6 +291,14 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         super.onMeasure(recycler, state, widthSpec, heightSpec);
     }
 
+    @SuppressWarnings("rawtypes")
+    @Override
+    public void onAdapterChanged(final RecyclerView.Adapter oldAdapter, final RecyclerView.Adapter newAdapter) {
+        super.onAdapterChanged(oldAdapter, newAdapter);
+
+        removeAllViews();
+    }
+
     @SuppressWarnings("RefusedBequest")
     @Override
     @CallSuper
@@ -534,7 +542,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             addView(view);
             measureChildWithMargins(view, 0, 0);
         } else {
-            view.bringToFront();
+            detachView(view);
+            attachView(view);
             if (childMeasuringNeeded) {
                 measureChildWithMargins(view, 0, 0);
             }
