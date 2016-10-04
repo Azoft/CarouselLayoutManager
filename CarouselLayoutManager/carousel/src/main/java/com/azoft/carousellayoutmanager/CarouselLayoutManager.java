@@ -64,6 +64,37 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     private CarouselSavedState mPendingCarouselSavedState;
 
+    private RecyclerView mRecyclerView;
+    private OnCenterItemClickListener mCenterItemClickListener;
+
+    private RecyclerView.OnChildAttachStateChangeListener mChildAttachStateChangeListener =
+            new RecyclerView.OnChildAttachStateChangeListener() {
+                @Override
+                public void onChildViewAttachedToWindow(@NonNull final View view) {
+                    view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(@NonNull final View view) {
+                            if (mRecyclerView == null) return;
+
+                            final RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(view);
+                            final int position = holder.getAdapterPosition();
+
+                            if (position != getCenterItemPosition()) {
+                                mRecyclerView.smoothScrollToPosition(position);
+                            } else if (mCenterItemClickListener != null) {
+                                mCenterItemClickListener
+                                        .onCenterItemClicked(mRecyclerView, position, view);
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onChildViewDetachedFromWindow(@NonNull final View view) {
+                    // do nothing
+                }
+            };
+
     /**
      * @param orientation should be {@link #VERTICAL} or {@link #HORIZONTAL}
      */
@@ -680,6 +711,21 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     }
 
     /**
+     *
+     * @param recyclerView
+     * @param listener
+     */
+    public void setOnItemClickListener(@NonNull final RecyclerView recyclerView, @Nullable final OnCenterItemClickListener listener) {
+        if (recyclerView == null) return;
+
+        mRecyclerView = recyclerView;
+        mCenterItemClickListener = listener;
+
+        recyclerView.removeOnChildAttachStateChangeListener(mChildAttachStateChangeListener);
+        recyclerView.addOnChildAttachStateChangeListener(mChildAttachStateChangeListener);
+    }
+
+    /**
      * Helper method that make scroll in range of [0, count). Generally this method is needed only for cycle layout.
      *
      * @param currentScrollPosition any scroll position range.
@@ -695,6 +741,19 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             absCurrentScrollPosition -= count;
         }
         return absCurrentScrollPosition;
+    }
+
+    /**
+     *
+     */
+    public interface OnCenterItemClickListener {
+        /**
+         *
+         * @param recyclerView
+         * @param position
+         * @param view
+         */
+        void onCenterItemClicked(@NonNull final RecyclerView recyclerView, final int position, @NonNull final View view);
     }
 
     /**
