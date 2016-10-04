@@ -14,9 +14,11 @@ import android.widget.Toast;
 import com.azoft.carousellayoutmanager.CarouselLayoutManager;
 import com.azoft.carousellayoutmanager.CarouselZoomPostLayoutListener;
 import com.azoft.carousellayoutmanager.CenterScrollListener;
+import com.azoft.carousellayoutmanager.DefaultChildSelectionListener;
 import com.azoft.carousellayoutmanager.sample.databinding.ActivityCarouselPreviewBinding;
 import com.azoft.carousellayoutmanager.sample.databinding.ItemViewBinding;
 
+import java.util.Locale;
 import java.util.Random;
 
 public class CarouselPreviewActivity extends AppCompatActivity {
@@ -72,15 +74,14 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         // enable center post scrolling
         recyclerView.addOnScrollListener(new CenterScrollListener());
         // enable center post touching on item and item click listener
-        layoutManager.setOnItemClickListener(recyclerView,
-                new CarouselLayoutManager.OnCenterItemClickListener() {
-                    @Override
-                    public void onCenterItemClicked(@NonNull RecyclerView recyclerView, int position,
-                            @NonNull View view) {
-                        final String msg = String.format("Item %1$d was clicked", position);
-                        Toast.makeText(CarouselPreviewActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                });
+        DefaultChildSelectionListener.initCenterItemListener(new DefaultChildSelectionListener.OnCenterItemClickListener() {
+            @Override
+            public void onCenterItemClicked(@NonNull final RecyclerView recyclerView, @NonNull final CarouselLayoutManager carouselLayoutManager, @NonNull final View v) {
+                final int position = recyclerView.getChildLayoutPosition(v);
+                final String msg = String.format(Locale.US, "Item %1$d was clicked", position);
+                Toast.makeText(CarouselPreviewActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+        }, recyclerView, layoutManager);
 
         layoutManager.addOnItemSelectionListener(new CarouselLayoutManager.OnCenterItemSelectionListener() {
 
@@ -88,8 +89,10 @@ public class CarouselPreviewActivity extends AppCompatActivity {
             public void onCenterItemChanged(final int adapterPosition) {
                 if (CarouselLayoutManager.INVALID_POSITION != adapterPosition) {
                     final int value = adapter.mPosition[adapterPosition];
+/*
                     adapter.mPosition[adapterPosition] = (value % 10) + (value / 10 + 1) * 10;
                     adapter.notifyItemChanged(adapterPosition);
+*/
                 }
             }
         });
