@@ -42,8 +42,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     public static final int VERTICAL = OrientationHelper.VERTICAL;
 
     public static final int INVALID_POSITION = -1;
-
     public static final int MAX_VISIBLE_ITEMS = 2;
+
     private static final boolean CIRCLE_LAYOUT = false;
 
     private Integer mDecoratedChildWidth;
@@ -430,7 +430,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-
         for (final View view : viewsToRemove) {
             removeAndRecycleView(view, recycler);
         }
@@ -569,9 +568,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
                 return child;
             }
         }
-        final View view = recycler.getViewForPosition(position);
-        recycler.bindViewToPosition(view, position);
-        return view;
+        return recycler.getViewForPosition(position);
     }
 
     /**
@@ -757,7 +754,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
          *
          * @param layoutCount items count that will be layout
          */
-        public void initLayoutOrder(final int layoutCount) {
+        void initLayoutOrder(final int layoutCount) {
             if (null == mLayoutOrder || mLayoutOrder.length != layoutCount) {
                 if (null != mLayoutOrder) {
                     recycleItems(mLayoutOrder);
@@ -778,7 +775,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
          *                            if this item center is bellow layout center line then this value is greater then 0,
          *                            else less then 0.
          */
-        public void setLayoutOrder(final int arrayPosition, final int itemAdapterPosition, final float itemPositionDiff) {
+        void setLayoutOrder(final int arrayPosition, final int itemAdapterPosition, final float itemPositionDiff) {
             final LayoutOrder item = mLayoutOrder[arrayPosition];
             item.mItemAdapterPosition = itemAdapterPosition;
             item.mItemPositionDiff = itemPositionDiff;
@@ -790,7 +787,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
          * @param adapterPosition adapter position of item for future data filling logic
          * @return true is adapterItem is in layout
          */
-        public boolean hasAdapterPosition(final int adapterPosition) {
+        boolean hasAdapterPosition(final int adapterPosition) {
             if (null != mLayoutOrder) {
                 for (final LayoutOrder layoutOrder : mLayoutOrder) {
                     if (layoutOrder.mItemAdapterPosition == adapterPosition) {
@@ -847,12 +844,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         private float mItemPositionDiff;
     }
 
-    public static class CarouselSavedState implements Parcelable {
+    protected static class CarouselSavedState implements Parcelable {
 
         private final Parcelable mSuperState;
         private int mCenterItemPosition;
 
-        public CarouselSavedState(@Nullable final Parcelable superState) {
+        protected CarouselSavedState(@Nullable final Parcelable superState) {
             mSuperState = superState;
         }
 
@@ -861,7 +858,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             mCenterItemPosition = in.readInt();
         }
 
-        public CarouselSavedState(@NonNull final CarouselSavedState other) {
+        protected CarouselSavedState(@NonNull final CarouselSavedState other) {
             mSuperState = other.mSuperState;
             mCenterItemPosition = other.mCenterItemPosition;
         }
