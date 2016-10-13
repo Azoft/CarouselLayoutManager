@@ -44,6 +44,11 @@ Full code from this sample:
     recyclerView.setAdapter(new TestAdapter(this));
     recyclerView.addOnScrollListener(new CenterScrollListener());
 
+## Customizations
+
+You can enable and disable circular loop using two arguments constructor. Pass true to enable loop and false to disable.
+
+You can make carousel Vertically and Horizontally by changing first argument.
 
 #### Contact ####
 

@@ -64,8 +64,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     private CarouselSavedState mPendingCarouselSavedState;
 
-    private RecyclerView mRecyclerView;
-
     /**
      * @param orientation should be {@link #VERTICAL} or {@link #HORIZONTAL}
      */
