@@ -178,9 +178,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         if (0 > position) {
             throw new IllegalArgumentException("position can't be less then 0. position is : " + position);
         }
-        if (position >= mItemsCount) {
-            throw new IllegalArgumentException("position can't be great then adapter items count. position is : " + position);
-        }
         mPendingScrollPosition = position;
         requestLayout();
     }
@@ -326,6 +323,10 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
             childMeasuringNeeded = true;
         }
 
+        if (INVALID_POSITION != mPendingScrollPosition) {
+            final int itemsCount = state.getItemCount();
+            mPendingScrollPosition = 0 == itemsCount ? INVALID_POSITION : Math.max(0, Math.min(itemsCount - 1, mPendingScrollPosition));
+        }
         if (INVALID_POSITION != mPendingScrollPosition) {
             mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingScrollPosition, state);
             mPendingScrollPosition = INVALID_POSITION;
