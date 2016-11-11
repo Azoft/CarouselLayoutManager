@@ -16,7 +16,7 @@ Android LayoutManager for RecyclerView to support Carousel view style
 ## Description
 
 This LayoutManager works only with fixedSized items in adapter.
-To use this LayoutManager copy files that contains in com.azoft.carousellayoutmanager.carousel folder and use this code (you can use CarouselLayoutManager.HORIZONTAL as well):
+To use this LayoutManager add gradle (maven) dependence and use this code (you can use CarouselLayoutManager.HORIZONTAL as well):
 
     final CarouselLayoutManager layoutManager = new CarouselLayoutManager(CarouselLayoutManager.VERTICAL);
 
