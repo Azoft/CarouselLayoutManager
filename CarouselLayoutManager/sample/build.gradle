@@ -25,6 +25,6 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:25.0.0'
-//    compile 'com.azoft.carousellayoutmanager:carousel:1.1.8'
-    compile project(':carousel')
+    compile 'com.azoft.carousellayoutmanager:carousel:1.1.8'
+//    compile project(':carousel')
 }
