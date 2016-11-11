@@ -35,7 +35,7 @@ import java.util.List;
  * So like layout_height is not {@link ViewGroup.LayoutParams#MATCH_PARENT} for {@link CarouselLayoutManager#VERTICAL}<br />
  * <br />
  */
-@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass"})
+@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass", "unused"})
 public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
@@ -62,6 +62,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     private int mCenterItemPosition = INVALID_POSITION;
     private int mItemsCount;
 
+    @Nullable
     private CarouselSavedState mPendingCarouselSavedState;
 
     /**
@@ -202,6 +203,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         startSmoothScroll(mySmoothScroller);
     }
 
+    @Nullable
     protected PointF computeScrollVectorForPosition(final int targetPosition) {
         if (0 == getChildCount()) {
             return null;
@@ -349,7 +351,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final boolean childMeasuringNeeded) {
         final float currentScrollPosition = getCurrentScrollPosition();
         generateLayoutOrder(currentScrollPosition, state);
-        removeAndRecycleUnusedViews(mLayoutHelper, recycler);
+        detachAndScrapAttachedViews(recycler);
 
         final int width = getWidthNoPadding();
         final int height = getHeightNoPadding();
@@ -415,26 +417,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         }
     }
 
-    private void removeAndRecycleUnusedViews(final LayoutHelper layoutHelper, final RecyclerView.Recycler recycler) {
-        final List<View> viewsToRemove = new ArrayList<>();
-        for (int i = 0, size = getChildCount(); i < size; ++i) {
-            final View child = getChildAt(i);
-            final ViewGroup.LayoutParams lp = child.getLayoutParams();
-            if (!(lp instanceof RecyclerView.LayoutParams)) {
-                viewsToRemove.add(child);
-                continue;
-            }
-            final RecyclerView.LayoutParams recyclerViewLp = (RecyclerView.LayoutParams) lp;
-            final int adapterPosition = recyclerViewLp.getViewAdapterPosition();
-            if (recyclerViewLp.isItemRemoved() || !layoutHelper.hasAdapterPosition(adapterPosition)) {
-                viewsToRemove.add(child);
-            }
-        }
-
-        for (final View view : viewsToRemove) {
-            removeAndRecycleView(view, recycler);
-        }
-    }
 
     @SuppressWarnings("MethodWithTooManyParameters")
     private void fillChildItem(final int start, final int top, final int end, final int bottom, @NonNull final LayoutOrder layoutOrder, @NonNull final RecyclerView.Recycler recycler, final int i, final boolean childMeasuringNeeded) {
@@ -536,40 +518,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private View bindChild(final int position, @NonNull final RecyclerView.Recycler recycler, final boolean childMeasuringNeeded) {
-        final View view = findViewForPosition(recycler, position);
+        final View view = recycler.getViewForPosition(position);
 
-        if (null == view.getParent()) {
-            addView(view);
-            measureChildWithMargins(view, 0, 0);
-        } else {
-            detachView(view);
-            attachView(view);
-            if (childMeasuringNeeded) {
-                measureChildWithMargins(view, 0, 0);
-            }
-        }
+        addView(view);
+        measureChildWithMargins(view, 0, 0);
 
         return view;
-    }
-
-    private View findViewForPosition(final RecyclerView.Recycler recycler, final int position) {
-        for (int i = 0, size = getChildCount(); i < size; ++i) {
-            final View child = getChildAt(i);
-            final ViewGroup.LayoutParams lp = child.getLayoutParams();
-            if (!(lp instanceof RecyclerView.LayoutParams)) {
-                continue;
-            }
-            final RecyclerView.LayoutParams recyclerLp = (RecyclerView.LayoutParams) lp;
-            final int adapterPosition = recyclerLp.getViewAdapterPosition();
-            if (adapterPosition == position) {
-                if (recyclerLp.isItemChanged()) {
-                    recycler.bindViewToPosition(child, position);
-                    measureChildWithMargins(child, 0, 0);
-                }
-                return child;
-            }
-        }
-        return recycler.getViewForPosition(position);
     }
 
     /**
@@ -808,7 +762,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         }
 
         private void fillLayoutOrder() {
-            for (int i = 0; i < mLayoutOrder.length; ++i) {
+            for (int i = 0, length = mLayoutOrder.length; i < length; ++i) {
                 if (null == mLayoutOrder[i]) {
                     mLayoutOrder[i] = createLayoutOrder();
                 }
@@ -870,21 +824,21 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
         }
 
         @Override
-        public void writeToParcel(final Parcel dest, final int flags) {
-            dest.writeParcelable(mSuperState, flags);
-            dest.writeInt(mCenterItemPosition);
+        public void writeToParcel(final Parcel parcel, final int i) {
+            parcel.writeParcelable(mSuperState, i);
+            parcel.writeInt(mCenterItemPosition);
         }
 
         public static final Parcelable.Creator<CarouselSavedState> CREATOR
                 = new Parcelable.Creator<CarouselSavedState>() {
             @Override
-            public CarouselSavedState createFromParcel(final Parcel source) {
-                return new CarouselSavedState(source);
+            public CarouselSavedState createFromParcel(final Parcel parcel) {
+                return new CarouselSavedState(parcel);
             }
 
             @Override
-            public CarouselSavedState[] newArray(final int size) {
-                return new CarouselSavedState[size];
+            public CarouselSavedState[] newArray(final int i) {
+                return new CarouselSavedState[i];
             }
         };
     }
