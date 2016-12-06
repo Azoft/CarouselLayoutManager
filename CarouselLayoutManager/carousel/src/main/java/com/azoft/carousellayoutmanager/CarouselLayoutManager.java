@@ -621,17 +621,17 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     int getOffsetForCurrentView(@NonNull final View view) {
         final int position = getPosition(view);
-        final int fullCircles = mLayoutHelper.mScrollOffset / (mItemsCount * getScrollItemSize());
-        int fullOffset = fullCircles * mItemsCount * getScrollItemSize();
-        if (0 > mLayoutHelper.mScrollOffset) {
-            fullOffset -= 1;
-        }
+        int centerItemPosition = getCenterItemPosition();
 
-        if (0 == fullOffset || 0 < Math.signum(fullOffset)) {
-            return mLayoutHelper.mScrollOffset - position * getScrollItemSize() - fullOffset;
-        } else {
-            return mLayoutHelper.mScrollOffset + position * getScrollItemSize() - fullOffset;
+        int offsetCount = position - centerItemPosition;
+        if (Math.abs(offsetCount) > getMaxVisibleItems()) {
+            if (offsetCount > 0) {
+                offsetCount = offsetCount - getItemCount();
+            } else {
+                offsetCount = getItemCount() + offsetCount;
+            }
         }
+        return -offsetCount * getScrollItemSize();
     }
 
     /**
