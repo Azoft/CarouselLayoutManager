@@ -107,9 +107,9 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         private int mItemsCount = 10;
 
         TestAdapter() {
-            mColors = new int[10];
-            mPosition = new int[10];
-            for (int i = 0; 10 > i; ++i) {
+            mColors = new int[mItemsCount];
+            mPosition = new int[mItemsCount];
+            for (int i = 0; mItemsCount > i; ++i) {
                 //noinspection MagicNumber
                 mColors[i] = Color.argb(255, mRandom.nextInt(256), mRandom.nextInt(256), mRandom.nextInt(256));
                 mPosition[i] = i;
