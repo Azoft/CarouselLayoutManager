@@ -41,11 +41,15 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         binding.fabScroll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+/*
                 final int itemToRemove = adapter.mItemsCount;
                 if (10 != itemToRemove) {
                     adapter.mItemsCount++;
                     adapter.notifyItemInserted(itemToRemove);
                 }
+*/
+                binding.listHorizontal.smoothScrollToPosition(5);
+                binding.listVertical.smoothScrollToPosition(5);
             }
         });
 
@@ -53,11 +57,15 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         binding.fabChangeData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+/*
                 final int itemToRemove = adapter.mItemsCount - 1;
                 if (0 <= itemToRemove) {
                     adapter.mItemsCount--;
                     adapter.notifyItemRemoved(itemToRemove);
                 }
+*/
+                binding.listHorizontal.smoothScrollToPosition(4);
+                binding.listVertical.smoothScrollToPosition(4);
             }
         });
     }
@@ -65,6 +73,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
     private void initRecyclerView(final RecyclerView recyclerView, final CarouselLayoutManager layoutManager, final TestAdapter adapter) {
         // enable zoom effect. this line can be customized
         layoutManager.setPostLayoutListener(new CarouselZoomPostLayoutListener());
+        layoutManager.setMaxVisibleItems(1);
 
         recyclerView.setLayoutManager(layoutManager);
         // we expect only fixed sized item for now

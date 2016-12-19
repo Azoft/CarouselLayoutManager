@@ -1,7 +1,8 @@
 package com.azoft.carousellayoutmanager;
 
-import android.content.Context;
-import android.support.v7.widget.LinearSmoothScroller;
+import android.graphics.PointF;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
@@ -9,30 +10,33 @@ import android.view.View;
  *
  * @see CarouselLayoutManager
  */
-public abstract class CarouselSmoothScroller extends LinearSmoothScroller {
+public class CarouselSmoothScroller {
 
-    protected CarouselSmoothScroller(final Context context) {
-        super(context);
+    public CarouselSmoothScroller(@NonNull final RecyclerView.State state, final int position) {
+        if (0 > position) {
+            throw new IllegalArgumentException("position can't be less then 0. position is : " + position);
+        }
+        if (position >= state.getItemCount()) {
+            throw new IllegalArgumentException("position can't be great then adapter items count. position is : " + position);
+        }
     }
 
-    @SuppressWarnings("RefusedBequest")
-    @Override
-    public int calculateDyToMakeVisible(final View view, final int snapPreference) {
-        final CarouselLayoutManager layoutManager = (CarouselLayoutManager) getLayoutManager();
-        if (null == layoutManager || !layoutManager.canScrollVertically()) {
+    public PointF computeScrollVectorForPosition(final int targetPosition, @NonNull final CarouselLayoutManager carouselLayoutManager) {
+        return carouselLayoutManager.computeScrollVectorForPosition(targetPosition);
+    }
+
+    public int calculateDyToMakeVisible(final View view, @NonNull final CarouselLayoutManager carouselLayoutManager) {
+        if (!carouselLayoutManager.canScrollVertically()) {
             return 0;
         }
 
-        return layoutManager.getOffsetForCurrentView(view);
+        return carouselLayoutManager.getOffsetForCurrentView(view);
     }
 
-    @SuppressWarnings("RefusedBequest")
-    @Override
-    public int calculateDxToMakeVisible(final View view, final int snapPreference) {
-        final CarouselLayoutManager layoutManager = (CarouselLayoutManager) getLayoutManager();
-        if (null == layoutManager || !layoutManager.canScrollHorizontally()) {
+    public int calculateDxToMakeVisible(final View view, @NonNull final CarouselLayoutManager carouselLayoutManager) {
+        if (!carouselLayoutManager.canScrollHorizontally()) {
             return 0;
         }
-        return layoutManager.getOffsetForCurrentView(view);
+        return carouselLayoutManager.getOffsetForCurrentView(view);
     }
 }

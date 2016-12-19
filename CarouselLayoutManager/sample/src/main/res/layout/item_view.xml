@@ -11,8 +11,9 @@
     </data>
 
     <RelativeLayout
-        android:layout_width="250dp"
-        android:layout_height="192dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp">
 
         <TextView
             android:id="@+id/c_item_1"

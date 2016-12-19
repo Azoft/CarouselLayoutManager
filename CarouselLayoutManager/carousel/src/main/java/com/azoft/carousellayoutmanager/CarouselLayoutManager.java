@@ -9,8 +9,10 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -36,7 +38,7 @@ import java.util.List;
  * <br />
  */
 @SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass", "unused"})
-public class CarouselLayoutManager extends RecyclerView.LayoutManager {
+public class CarouselLayoutManager extends RecyclerView.LayoutManager implements RecyclerView.SmoothScroller.ScrollVectorProvider {
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
     public static final int VERTICAL = OrientationHelper.VERTICAL;
@@ -186,34 +188,63 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     @SuppressWarnings("RefusedBequest")
     @Override
     public void smoothScrollToPosition(@NonNull final RecyclerView recyclerView, @NonNull final RecyclerView.State state, final int position) {
-        final CarouselSmoothScroller mySmoothScroller =
-                new CarouselSmoothScroller(recyclerView.getContext()) {
-                    @Override
-                    public PointF computeScrollVectorForPosition(final int targetPosition) {
-                        if (0 > position) {
-                            throw new IllegalArgumentException("position can't be less then 0. position is : " + position);
-                        }
-                        if (position >= state.getItemCount()) {
-                            throw new IllegalArgumentException("position can't be great then adapter items count. position is : " + position);
-                        }
-                        return CarouselLayoutManager.this.computeScrollVectorForPosition(targetPosition);
-                    }
-                };
-        mySmoothScroller.setTargetPosition(position);
-        startSmoothScroll(mySmoothScroller);
+        final LinearSmoothScroller linearSmoothScroller = new LinearSmoothScroller(recyclerView.getContext()) {
+            @Override
+            public int calculateDyToMakeVisible(final View view, final int snapPreference) {
+                if (!canScrollVertically()) {
+                    return 0;
+                }
+
+                return getOffsetForCurrentView(view);
+            }
+
+            @Override
+            public int calculateDxToMakeVisible(final View view, final int snapPreference) {
+                if (!canScrollHorizontally()) {
+                    return 0;
+                }
+                return getOffsetForCurrentView(view);
+            }
+
+            @Override
+            protected float calculateSpeedPerPixel(final DisplayMetrics displayMetrics) {
+                return super.calculateSpeedPerPixel(displayMetrics) * 100;
+            }
+        };
+        linearSmoothScroller.setTargetPosition(position);
+        startSmoothScroll(linearSmoothScroller);
     }
 
+    @Override
     @Nullable
-    protected PointF computeScrollVectorForPosition(final int targetPosition) {
+    public PointF computeScrollVectorForPosition(final int targetPosition) {
         if (0 == getChildCount()) {
             return null;
         }
-        final float currentScrollPosition = makeScrollPositionInRange0ToCount(getCurrentScrollPosition(), mItemsCount);
-        final int direction = targetPosition < currentScrollPosition ? -1 : 1;
+        final float directionDistance = getScrollDirection(targetPosition);
+        //noinspection NumericCastThatLosesPrecision
+        final int direction = (int) -Math.signum(directionDistance);
+
         if (HORIZONTAL == mOrientation) {
             return new PointF(direction, 0);
         } else {
             return new PointF(0, direction);
+        }
+    }
+
+    private float getScrollDirection(final int targetPosition) {
+        final float currentScrollPosition = makeScrollPositionInRange0ToCount(getCurrentScrollPosition(), mItemsCount);
+
+        if (mCircleLayout) {
+            final float t1 = currentScrollPosition - targetPosition;
+            final float t2 = Math.abs(t1) - mItemsCount;
+            if (Math.abs(t1) > Math.abs(t2)) {
+                return Math.signum(t1) * t2;
+            } else {
+                return t1;
+            }
+        } else {
+            return currentScrollPosition - targetPosition;
         }
     }
 
@@ -345,7 +376,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
 
     private int calculateScrollForSelectingPosition(final int itemPosition, final RecyclerView.State state) {
         final int fixedItemPosition = itemPosition < state.getItemCount() ? itemPosition : state.getItemCount() - 1;
-        return VERTICAL == mOrientation ? fixedItemPosition * mDecoratedChildHeight : fixedItemPosition * mDecoratedChildWidth;
+        return fixedItemPosition * (VERTICAL == mOrientation ? mDecoratedChildHeight : mDecoratedChildWidth);
     }
 
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final boolean childMeasuringNeeded) {
@@ -615,23 +646,20 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager {
     /**
      * @return Scroll offset from nearest item from center
      */
-    int getOffsetCenterView() {
+    protected int getOffsetCenterView() {
         return Math.round(getCurrentScrollPosition()) * getScrollItemSize() - mLayoutHelper.mScrollOffset;
     }
 
-    int getOffsetForCurrentView(@NonNull final View view) {
-        final int position = getPosition(view);
-        int centerItemPosition = getCenterItemPosition();
+    protected int getOffsetForCurrentView(@NonNull final View view) {
+        final int targetPosition = getPosition(view);
+        final float directionDistance = getScrollDirection(targetPosition);
 
-        int offsetCount = position - centerItemPosition;
-        if (Math.abs(offsetCount) > getMaxVisibleItems()) {
-            if (offsetCount > 0) {
-                offsetCount = offsetCount - getItemCount();
-            } else {
-                offsetCount = getItemCount() + offsetCount;
-            }
+        final int distance = Math.round(directionDistance * getScrollItemSize());
+        if (mCircleLayout) {
+            return distance;
+        } else {
+            return distance;
         }
-        return -offsetCount * getScrollItemSize();
     }
 
     /**
