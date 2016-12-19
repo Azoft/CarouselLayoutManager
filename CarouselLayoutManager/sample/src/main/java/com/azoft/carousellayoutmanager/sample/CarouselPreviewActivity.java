@@ -48,8 +48,8 @@ public class CarouselPreviewActivity extends AppCompatActivity {
                     adapter.notifyItemInserted(itemToRemove);
                 }
 */
-                binding.listHorizontal.smoothScrollToPosition(5);
-                binding.listVertical.smoothScrollToPosition(5);
+                binding.listHorizontal.smoothScrollToPosition(adapter.getItemCount() - 2);
+                binding.listVertical.smoothScrollToPosition(adapter.getItemCount() - 2);
             }
         });
 
@@ -64,8 +64,8 @@ public class CarouselPreviewActivity extends AppCompatActivity {
                     adapter.notifyItemRemoved(itemToRemove);
                 }
 */
-                binding.listHorizontal.smoothScrollToPosition(4);
-                binding.listVertical.smoothScrollToPosition(4);
+                binding.listHorizontal.smoothScrollToPosition(1);
+                binding.listVertical.smoothScrollToPosition(1);
             }
         });
     }

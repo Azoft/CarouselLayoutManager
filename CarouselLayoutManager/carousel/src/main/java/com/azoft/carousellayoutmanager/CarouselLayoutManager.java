@@ -12,7 +12,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -204,11 +203,6 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
                     return 0;
                 }
                 return getOffsetForCurrentView(view);
-            }
-
-            @Override
-            protected float calculateSpeedPerPixel(final DisplayMetrics displayMetrics) {
-                return super.calculateSpeedPerPixel(displayMetrics) * 100;
             }
         };
         linearSmoothScroller.setTargetPosition(position);
