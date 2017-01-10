@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         applicationId "com.azoft.carousellayoutmanager.sample"
@@ -24,7 +24,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    compile 'com.azoft.carousellayoutmanager:carousel:1.2.0'
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.azoft.carousellayoutmanager:carousel:1.2.1'
 //    compile project(':carousel')
 }

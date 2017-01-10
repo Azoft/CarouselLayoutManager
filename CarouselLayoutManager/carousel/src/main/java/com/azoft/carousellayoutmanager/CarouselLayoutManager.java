@@ -271,6 +271,9 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
      */
     @CallSuper
     protected int scrollBy(final int diff, @NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
+        if (null == mDecoratedChildWidth || null == mDecoratedChildHeight) {
+            return 0;
+        }
         if (0 == getChildCount() || 0 == diff) {
             return 0;
         }
