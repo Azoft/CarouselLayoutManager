@@ -86,6 +86,11 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         this(orientation, circleLayout, true);
     }
 
+    /**
+     * @param orientation  should be {@link #VERTICAL} or {@link #HORIZONTAL}
+     * @param circleLayout true for enabling circleLayout
+     * @param calculateScroll whether {@link CarouselLayoutManager#calculateScrollForSelectingPosition(int, RecyclerView.State)} should be called in {@link CarouselLayoutManager#onLayoutChildren(RecyclerView.Recycler, RecyclerView.State)}
+     */
     public CarouselLayoutManager(final int orientation, final boolean circleLayout, final boolean calculateScroll) {
         if (HORIZONTAL != orientation && VERTICAL != orientation) {
             throw new IllegalArgumentException("orientation should be HORIZONTAL or VERTICAL");
