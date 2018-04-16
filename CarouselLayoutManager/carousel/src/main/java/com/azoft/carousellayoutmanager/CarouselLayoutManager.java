@@ -52,6 +52,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     private final int mOrientation;
     private final boolean mCircleLayout;
+    private final boolean mCalculateScroll;
 
     private int mPendingScrollPosition;
 
@@ -71,7 +72,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
      */
     @SuppressWarnings("unused")
     public CarouselLayoutManager(final int orientation) {
-        this(orientation, CIRCLE_LAYOUT);
+        this(orientation, CIRCLE_LAYOUT, true);
     }
 
     /**
@@ -82,11 +83,16 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
      */
     @SuppressWarnings("unused")
     public CarouselLayoutManager(final int orientation, final boolean circleLayout) {
+        this(orientation, circleLayout, true);
+    }
+
+    public CarouselLayoutManager(final int orientation, final boolean circleLayout, final boolean calculateScroll) {
         if (HORIZONTAL != orientation && VERTICAL != orientation) {
             throw new IllegalArgumentException("orientation should be HORIZONTAL or VERTICAL");
         }
         mOrientation = orientation;
         mCircleLayout = circleLayout;
+        mCalculateScroll = calculateScroll;
         mPendingScrollPosition = INVALID_POSITION;
     }
 
@@ -358,14 +364,20 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             mPendingScrollPosition = 0 == itemsCount ? INVALID_POSITION : Math.max(0, Math.min(itemsCount - 1, mPendingScrollPosition));
         }
         if (INVALID_POSITION != mPendingScrollPosition) {
-            mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingScrollPosition, state);
+            if (mCalculateScroll) {
+                mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingScrollPosition, state);
+            }
             mPendingScrollPosition = INVALID_POSITION;
             mPendingCarouselSavedState = null;
         } else if (null != mPendingCarouselSavedState) {
-            mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingCarouselSavedState.mCenterItemPosition, state);
+            if (mCalculateScroll) {
+                mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mPendingCarouselSavedState.mCenterItemPosition, state);
+            }
             mPendingCarouselSavedState = null;
         } else if (state.didStructureChange() && INVALID_POSITION != mCenterItemPosition) {
-            mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mCenterItemPosition, state);
+            if (mCalculateScroll) {
+                mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mCenterItemPosition, state);
+            }
         }
 
         fillData(recycler, state, childMeasuringNeeded);
