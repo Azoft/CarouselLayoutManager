@@ -36,7 +36,7 @@ import java.util.List;
  * So like layout_height is not {@link ViewGroup.LayoutParams#MATCH_PARENT} for {@link CarouselLayoutManager#VERTICAL}<br />
  * <br />
  */
-@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass", "unused"})
+@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass", "unused", "WeakerAccess"})
 public class CarouselLayoutManager extends RecyclerView.LayoutManager implements RecyclerView.SmoothScroller.ScrollVectorProvider {
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
@@ -460,8 +460,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             view.layout(Math.round(start + transformation.mTranslationX), Math.round(top + transformation.mTranslationY),
                     Math.round(end + transformation.mTranslationX), Math.round(bottom + transformation.mTranslationY));
 
-            ViewCompat.setScaleX(view, transformation.mScaleX);
-            ViewCompat.setScaleY(view, transformation.mScaleY);
+            view.setScaleX(transformation.mScaleX);
+            view.setScaleY(transformation.mScaleY);
         }
     }
 

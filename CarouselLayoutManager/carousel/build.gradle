@@ -1,10 +1,11 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.android.tools.build:gradle:3.1.1'
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
         classpath "com.github.dcendents:android-maven-gradle-plugin:1.4.1"
         classpath "com.github.dcendents:android-maven-plugin:1.2"
@@ -75,13 +76,13 @@ install {
 //////////////////////////////// Upload to BinTray ////////////////////////////////
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
     resourcePrefix "carousellayoutmanager__"
 
     defaultConfig {
         minSdkVersion 11
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 1
         versionName version
     }
@@ -97,12 +98,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:25.0.0'
-    compile 'com.android.support:design:25.0.0'
-    compile 'com.android.support:recyclerview-v7:25.0.0'
-    javadocDeps 'com.android.support:support-annotations:25.0.0'
-    javadocDeps 'com.android.support:recyclerview-v7:25.0.0'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    def supportVersion = "27.1.1"
+
+    implementation "com.android.support:support-v4:$supportVersion"
+    implementation "com.android.support:design:$supportVersion"
+    implementation "com.android.support:recyclerview-v7:$supportVersion"
+    javadocDeps "com.android.support:support-annotations:$supportVersion"
+    javadocDeps "com.android.support:recyclerview-v7:$supportVersion"
 }
 
 task sourcesJar(type: Jar) {
