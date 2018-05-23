@@ -5,9 +5,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.1'
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
-        classpath "com.github.dcendents:android-maven-gradle-plugin:1.4.1"
+        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
+        classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
         classpath "com.github.dcendents:android-maven-plugin:1.2"
     }
 }
@@ -78,6 +78,7 @@ install {
 android {
     compileSdkVersion 27
     buildToolsVersion "27.0.3"
+    buildToolsVersion '27.0.3'
     resourcePrefix "carousellayoutmanager__"
 
     defaultConfig {
