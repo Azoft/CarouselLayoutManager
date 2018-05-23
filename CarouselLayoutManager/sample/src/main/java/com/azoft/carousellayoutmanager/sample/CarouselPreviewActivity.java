@@ -126,7 +126,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         }
 
         @Override
-        public TestViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
+        public TestViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, final int viewType) {
             return new TestViewHolder(ItemViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
         }
 
