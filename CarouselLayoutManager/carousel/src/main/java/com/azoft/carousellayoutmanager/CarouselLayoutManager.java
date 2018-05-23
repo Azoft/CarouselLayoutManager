@@ -14,6 +14,7 @@ import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -453,7 +454,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     @SuppressWarnings("MethodWithTooManyParameters")
     private void fillChildItem(final int start, final int top, final int end, final int bottom, @NonNull final LayoutOrder layoutOrder, @NonNull final RecyclerView.Recycler recycler, final int i, final boolean childMeasuringNeeded) {
-        final View view = bindChild(layoutOrder.mItemAdapterPosition, recycler, childMeasuringNeeded);
+        final View view = bindChild(layoutOrder, recycler, childMeasuringNeeded);
         ViewCompat.setElevation(view, i);
         ItemTransformation transformation = null;
         if (null != mViewPostLayout) {
@@ -507,17 +508,19 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
         final ArrayList<Integer> oldPositions;
         final ArrayList<Integer> newPositions;
-
-        final int length;
+        final SparseArray<View> existingViews;
 
         if (mLayoutHelper.mLayoutOrder != null) {
-            length = mLayoutHelper.mLayoutOrder.length;
-            oldPositions = new ArrayList<>(length);
+            existingViews = new SparseArray<>(mLayoutHelper.mLayoutOrder.length);
+            oldPositions = new ArrayList<>(mLayoutHelper.mLayoutOrder.length);
 
             for (LayoutOrder layoutOrder : mLayoutHelper.mLayoutOrder) {
+                existingViews.append(layoutOrder.mItemAdapterPosition, layoutOrder.mView);
+                layoutOrder.mView = null;
                 oldPositions.add(layoutOrder.mItemAdapterPosition);
             }
         } else {
+            existingViews = new SparseArray<>(0);
             oldPositions = new ArrayList<>(0);
         }
 
@@ -568,12 +571,19 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         if (oldPositions.removeAll(newPositions)) {
             if (!oldPositions.isEmpty()) {
                 for (Integer oldPosition : oldPositions) {
-                    Log.d(LOG_TAG, "recycler.recycleView(recycler.getViewForPosition(" + oldPosition + "))");
-
-                    recycler.recycleView(recycler.getViewForPosition(oldPosition));
+                    View toRecycle = existingViews.get(oldPosition);
+                    if (null != toRecycle) {
+                        removeAndRecycleView(toRecycle, recycler);
+                    } else {
+                        Log.w(LOG_TAG, "toRecycle not found");
+                    }
                 }
             }
         }
+
+        oldPositions.clear();
+        newPositions.clear();
+        existingViews.clear();
     }
 
     public int getWidthNoPadding() {
@@ -584,11 +594,17 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         return getHeight() - getPaddingEnd() - getPaddingStart();
     }
 
-    private View bindChild(final int position, @NonNull final RecyclerView.Recycler recycler, final boolean childMeasuringNeeded) {
-        final View view = recycler.getViewForPosition(position);
+    private View bindChild(LayoutOrder layoutOrder, @NonNull final RecyclerView.Recycler recycler, final boolean childMeasuringNeeded) {
+        final View view = recycler.getViewForPosition(layoutOrder.mItemAdapterPosition);
 
         addView(view);
         measureChildWithMargins(view, 0, 0);
+
+        // Previous mView must have been recycled
+        if (null != layoutOrder.mView) {
+            Log.w(LOG_TAG, "Probably memory leak");
+        }
+        layoutOrder.mView = view;
 
         return view;
     }
