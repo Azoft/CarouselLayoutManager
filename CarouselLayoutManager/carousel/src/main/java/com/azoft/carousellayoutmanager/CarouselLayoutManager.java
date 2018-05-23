@@ -12,6 +12,8 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -38,6 +40,7 @@ import java.util.List;
  */
 @SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass", "unused", "WeakerAccess"})
 public class CarouselLayoutManager extends RecyclerView.LayoutManager implements RecyclerView.SmoothScroller.ScrollVectorProvider {
+    public static final String LOG_TAG = "CLM";
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
     public static final int VERTICAL = OrientationHelper.VERTICAL;
@@ -378,7 +381,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final boolean childMeasuringNeeded) {
         final float currentScrollPosition = getCurrentScrollPosition();
-        generateLayoutOrder(currentScrollPosition, state);
+
+        generateLayoutOrder(recycler, currentScrollPosition, state);
         detachAndScrapAttachedViews(recycler);
 
         final int width = getWidthNoPadding();
@@ -438,6 +442,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
         for (int i = 0, count = mLayoutHelper.mLayoutOrder.length; i < count; ++i) {
             final LayoutOrder layoutOrder = mLayoutHelper.mLayoutOrder[i];
+
             final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
             final int start = centerViewStart + offset;
             final int end = start + mDecoratedChildWidth;
@@ -495,43 +500,77 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
      * @param state                 Transient state of RecyclerView
      * @see #getCurrentScrollPosition()
      */
-    private void generateLayoutOrder(final float currentScrollPosition, @NonNull final RecyclerView.State state) {
+    private void generateLayoutOrder(@NonNull final RecyclerView.Recycler recycler, final float currentScrollPosition, @NonNull final RecyclerView.State state) {
         mItemsCount = state.getItemCount();
         final float absCurrentScrollPosition = makeScrollPositionInRange0ToCount(currentScrollPosition, mItemsCount);
         final int centerItem = Math.round(absCurrentScrollPosition);
+
+        final ArrayList<Integer> oldPositions;
+        final ArrayList<Integer> newPositions;
+
+        final int length;
+
+        if (mLayoutHelper.mLayoutOrder != null) {
+            length = mLayoutHelper.mLayoutOrder.length;
+            oldPositions = new ArrayList<>(length);
+
+            for (LayoutOrder layoutOrder : mLayoutHelper.mLayoutOrder) {
+                oldPositions.add(layoutOrder.mItemAdapterPosition);
+            }
+        } else {
+            oldPositions = new ArrayList<>(0);
+        }
 
         if (mCircleLayout && 1 < mItemsCount) {
             final int layoutCount = Math.min(mLayoutHelper.mMaxVisibleItems * 2 + 3, mItemsCount);// + 3 = 1 (center item) + 2 (addition bellow maxVisibleItems)
 
             mLayoutHelper.initLayoutOrder(layoutCount);
+            newPositions = new ArrayList<>(layoutCount);
 
             final int countLayoutHalf = layoutCount / 2;
             // before center item
             for (int i = 1; i <= countLayoutHalf; ++i) {
                 final int position = Math.round(absCurrentScrollPosition - i + mItemsCount) % mItemsCount;
                 mLayoutHelper.setLayoutOrder(countLayoutHalf - i, position, centerItem - absCurrentScrollPosition - i);
+                newPositions.add(position);
             }
             // after center item
             for (int i = layoutCount - 1; i >= countLayoutHalf + 1; --i) {
                 final int position = Math.round(absCurrentScrollPosition - i + layoutCount) % mItemsCount;
                 mLayoutHelper.setLayoutOrder(i - 1, position, centerItem - absCurrentScrollPosition + layoutCount - i);
+                newPositions.add(position);
             }
             mLayoutHelper.setLayoutOrder(layoutCount - 1, centerItem, centerItem - absCurrentScrollPosition);
-
+            newPositions.add(centerItem);
         } else {
             final int firstVisible = Math.max(centerItem - mLayoutHelper.mMaxVisibleItems - 1, 0);
             final int lastVisible = Math.min(centerItem + mLayoutHelper.mMaxVisibleItems + 1, mItemsCount - 1);
             final int layoutCount = lastVisible - firstVisible + 1;
 
             mLayoutHelper.initLayoutOrder(layoutCount);
+            newPositions = new ArrayList<>(layoutCount);
 
             for (int i = firstVisible; i <= lastVisible; ++i) {
+                newPositions.add(i);
                 if (i == centerItem) {
                     mLayoutHelper.setLayoutOrder(layoutCount - 1, i, i - absCurrentScrollPosition);
                 } else if (i < centerItem) {
                     mLayoutHelper.setLayoutOrder(i - firstVisible, i, i - absCurrentScrollPosition);
                 } else {
                     mLayoutHelper.setLayoutOrder(layoutCount - (i - centerItem) - 1, i, i - absCurrentScrollPosition);
+                }
+            }
+        }
+
+        Log.d(LOG_TAG, "oldPositions: " + TextUtils.join(",", oldPositions));
+        Log.d(LOG_TAG, "newPositions: " + TextUtils.join(",", newPositions));
+
+        if (oldPositions.removeAll(newPositions)) {
+            if (!oldPositions.isEmpty()) {
+                for (Integer oldPosition : oldPositions) {
+                    Log.d(LOG_TAG, "recycler.recycleView(recycler.getViewForPosition(" + oldPosition + "))");
+
+                    recycler.recycleView(recycler.getViewForPosition(oldPosition));
                 }
             }
         }
@@ -810,9 +849,11 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     /**
      * Class that holds item data.
-     * This class is filled during {@link #generateLayoutOrder(float, RecyclerView.State)} and used during {@link #fillData(RecyclerView.Recycler, RecyclerView.State, boolean)}
+     * This class is filled during {@link #generateLayoutOrder(RecyclerView.Recycler, float, RecyclerView.State)} and used during {@link #fillData(RecyclerView.Recycler, RecyclerView.State, boolean)}
      */
     private static class LayoutOrder {
+        @Nullable
+        private View mView;
 
         /**
          * Item adapter position
