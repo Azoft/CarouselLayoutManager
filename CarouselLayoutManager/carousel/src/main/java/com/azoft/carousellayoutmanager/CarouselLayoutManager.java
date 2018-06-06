@@ -47,6 +47,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     private static final boolean CIRCLE_LAYOUT = false;
 
+    private boolean mDecoratedChildSizeInvalid;
     private Integer mDecoratedChildWidth;
     private Integer mDecoratedChildHeight;
 
@@ -305,15 +306,14 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         }
         if (0 != resultScroll) {
             mLayoutHelper.mScrollOffset += resultScroll;
-            fillData(recycler, state, false);
+            fillData(recycler, state);
         }
         return resultScroll;
     }
 
     @Override
     public void onMeasure(final RecyclerView.Recycler recycler, final RecyclerView.State state, final int widthSpec, final int heightSpec) {
-        mDecoratedChildHeight = null;
-        mDecoratedChildWidth = null;
+        mDecoratedChildSizeInvalid = true;
 
         super.onMeasure(recycler, state, widthSpec, heightSpec);
     }
@@ -336,21 +336,24 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             return;
         }
 
-        boolean childMeasuringNeeded = false;
-        if (null == mDecoratedChildWidth) {
+        if (null == mDecoratedChildWidth || mDecoratedChildSizeInvalid) {
             final View view = recycler.getViewForPosition(0);
             addView(view);
             measureChildWithMargins(view, 0, 0);
 
-            mDecoratedChildWidth = getDecoratedMeasuredWidth(view);
-            mDecoratedChildHeight = getDecoratedMeasuredHeight(view);
+            final int decoratedChildWidth = getDecoratedMeasuredWidth(view);
+            final int decoratedChildHeight = getDecoratedMeasuredHeight(view);
             removeAndRecycleView(view, recycler);
 
-            if (INVALID_POSITION == mPendingScrollPosition && null == mPendingCarouselSavedState) {
-                mPendingScrollPosition = mCenterItemPosition;
+            if (null != mDecoratedChildWidth && (mDecoratedChildWidth != decoratedChildWidth || mDecoratedChildHeight != decoratedChildHeight)) {
+                if (INVALID_POSITION == mPendingScrollPosition && null == mPendingCarouselSavedState) {
+                    mPendingScrollPosition = mCenterItemPosition;
+                }
             }
 
-            childMeasuringNeeded = true;
+            mDecoratedChildWidth = decoratedChildWidth;
+            mDecoratedChildHeight = decoratedChildHeight;
+            mDecoratedChildSizeInvalid = false;
         }
 
         if (INVALID_POSITION != mPendingScrollPosition) {
@@ -368,7 +371,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             mLayoutHelper.mScrollOffset = calculateScrollForSelectingPosition(mCenterItemPosition, state);
         }
 
-        fillData(recycler, state, childMeasuringNeeded);
+        fillData(recycler, state);
     }
 
     private int calculateScrollForSelectingPosition(final int itemPosition, final RecyclerView.State state) {
@@ -376,7 +379,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         return fixedItemPosition * (VERTICAL == mOrientation ? mDecoratedChildHeight : mDecoratedChildWidth);
     }
 
-    private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final boolean childMeasuringNeeded) {
+    private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state) {
         final float currentScrollPosition = getCurrentScrollPosition();
 
         generateLayoutOrder(currentScrollPosition, state);
@@ -386,9 +389,9 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         final int width = getWidthNoPadding();
         final int height = getHeightNoPadding();
         if (VERTICAL == mOrientation) {
-            fillDataVertical(recycler, width, height, childMeasuringNeeded);
+            fillDataVertical(recycler, width, height);
         } else {
-            fillDataHorizontal(recycler, width, height, childMeasuringNeeded);
+            fillDataHorizontal(recycler, width, height);
         }
 
         recycler.clear();
@@ -417,7 +420,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         }
     }
 
-    private void fillDataVertical(final RecyclerView.Recycler recycler, final int width, final int height, final boolean childMeasuringNeeded) {
+    private void fillDataVertical(final RecyclerView.Recycler recycler, final int width, final int height) {
         final int start = (width - mDecoratedChildWidth) / 2;
         final int end = start + mDecoratedChildWidth;
 
@@ -428,11 +431,11 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
             final int top = centerViewTop + offset;
             final int bottom = top + mDecoratedChildHeight;
-            fillChildItem(start, top, end, bottom, layoutOrder, recycler, i, childMeasuringNeeded);
+            fillChildItem(start, top, end, bottom, layoutOrder, recycler, i);
         }
     }
 
-    private void fillDataHorizontal(final RecyclerView.Recycler recycler, final int width, final int height, final boolean childMeasuringNeeded) {
+    private void fillDataHorizontal(final RecyclerView.Recycler recycler, final int width, final int height) {
         final int top = (height - mDecoratedChildHeight) / 2;
         final int bottom = top + mDecoratedChildHeight;
 
@@ -443,14 +446,14 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             final int offset = getCardOffsetByPositionDiff(layoutOrder.mItemPositionDiff);
             final int start = centerViewStart + offset;
             final int end = start + mDecoratedChildWidth;
-            fillChildItem(start, top, end, bottom, layoutOrder, recycler, i, childMeasuringNeeded);
+            fillChildItem(start, top, end, bottom, layoutOrder, recycler, i);
         }
     }
 
 
     @SuppressWarnings("MethodWithTooManyParameters")
-    private void fillChildItem(final int start, final int top, final int end, final int bottom, @NonNull final LayoutOrder layoutOrder, @NonNull final RecyclerView.Recycler recycler, final int i, final boolean childMeasuringNeeded) {
-        final View view = bindChild(layoutOrder.mItemAdapterPosition, recycler, childMeasuringNeeded);
+    private void fillChildItem(final int start, final int top, final int end, final int bottom, @NonNull final LayoutOrder layoutOrder, @NonNull final RecyclerView.Recycler recycler, final int i) {
+        final View view = bindChild(layoutOrder.mItemAdapterPosition, recycler);
         ViewCompat.setElevation(view, i);
         ItemTransformation transformation = null;
         if (null != mViewPostLayout) {
@@ -547,7 +550,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         return getHeight() - getPaddingEnd() - getPaddingStart();
     }
 
-    private View bindChild(final int position, @NonNull final RecyclerView.Recycler recycler, final boolean childMeasuringNeeded) {
+    private View bindChild(final int position, @NonNull final RecyclerView.Recycler recycler) {
         final View view = recycler.getViewForPosition(position);
 
         addView(view);
@@ -573,7 +576,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     /**
-     * Called during {@link #fillData(RecyclerView.Recycler, RecyclerView.State, boolean)} to calculate item offset from layout center line. <br />
+     * Called during {@link #fillData(RecyclerView.Recycler, RecyclerView.State)} to calculate item offset from layout center line. <br />
      * <br />
      * Returns {@link #convertItemPositionDiffToSmoothPositionDiff(float)} * (size off area above center item when it is on the center). <br />
      * Sign is: plus if this item is bellow center line, minus if not<br />
@@ -828,7 +831,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     /**
      * Class that holds item data.
-     * This class is filled during {@link #generateLayoutOrder(float, RecyclerView.State)} and used during {@link #fillData(RecyclerView.Recycler, RecyclerView.State, boolean)}
+     * This class is filled during {@link #generateLayoutOrder(float, RecyclerView.State)} and used during {@link #fillData(RecyclerView.Recycler, RecyclerView.State)}
      */
     private static class LayoutOrder {
 
