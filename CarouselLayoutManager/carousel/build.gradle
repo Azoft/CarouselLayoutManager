@@ -22,7 +22,7 @@ group = "com.azoft.carousellayoutmanager"
 final def siteUrl = 'https://github.com/Azoft/CarouselLayoutManager'
 final def gitUrl = "https://github.com/Azoft/CarouselLayoutManager.git"
 // This is the library version used when deploying the artifact
-version = "1.2.3"
+version = "1.2.4"
 
 final Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
@@ -102,8 +102,6 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     def supportVersion = "27.1.1"
 
-    implementation "com.android.support:support-v4:$supportVersion"
-    implementation "com.android.support:design:$supportVersion"
     implementation "com.android.support:recyclerview-v7:$supportVersion"
     javadocDeps "com.android.support:support-annotations:$supportVersion"
     javadocDeps "com.android.support:recyclerview-v7:$supportVersion"
