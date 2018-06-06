@@ -113,7 +113,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         private final Random mRandom = new Random();
         private final int[] mColors;
         private final int[] mPosition;
-        private int mItemsCount = 10;
+        private int mItemsCount = 100;
 
         TestAdapter() {
             mColors = new int[mItemsCount];
@@ -127,11 +127,13 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
         @Override
         public TestViewHolder onCreateViewHolder(@NonNull final ViewGroup parent, final int viewType) {
+            Log.e("!!!!!!!!!", "onCreateViewHolder");
             return new TestViewHolder(ItemViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
         }
 
         @Override
         public void onBindViewHolder(final TestViewHolder holder, final int position) {
+            Log.e("!!!!!!!!!", "onBindViewHolder: " + position);
             holder.mItemViewBinding.cItem1.setText(String.valueOf(mPosition[position]));
             holder.mItemViewBinding.cItem2.setText(String.valueOf(mPosition[position]));
             holder.itemView.setBackgroundColor(mColors[position]);
@@ -140,6 +142,11 @@ public class CarouselPreviewActivity extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return mItemsCount;
+        }
+
+        @Override
+        public long getItemId(final int position) {
+            return position;
         }
     }
 
