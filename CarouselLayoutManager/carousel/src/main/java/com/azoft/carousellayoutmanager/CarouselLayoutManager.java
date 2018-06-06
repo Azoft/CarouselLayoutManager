@@ -378,8 +378,10 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
 
     private void fillData(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final boolean childMeasuringNeeded) {
         final float currentScrollPosition = getCurrentScrollPosition();
+
         generateLayoutOrder(currentScrollPosition, state);
         detachAndScrapAttachedViews(recycler);
+        recyclerOldViews(recycler);
 
         final int width = getWidthNoPadding();
         final int height = getHeightNoPadding();
@@ -552,6 +554,22 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         measureChildWithMargins(view, 0, 0);
 
         return view;
+    }
+
+    private void recyclerOldViews(final RecyclerView.Recycler recycler) {
+        for (RecyclerView.ViewHolder viewHolder : new ArrayList<>(recycler.getScrapList())) {
+            int adapterPosition = viewHolder.getAdapterPosition();
+            boolean found = false;
+            for (LayoutOrder layoutOrder : mLayoutHelper.mLayoutOrder) {
+                if (layoutOrder.mItemAdapterPosition == adapterPosition) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                recycler.recycleView(viewHolder.itemView);
+            }
+        }
     }
 
     /**
