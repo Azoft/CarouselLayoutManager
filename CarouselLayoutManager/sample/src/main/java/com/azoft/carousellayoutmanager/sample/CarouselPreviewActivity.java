@@ -1,11 +1,7 @@
 package com.azoft.carousellayoutmanager.sample;
 
-import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,13 +18,18 @@ import com.azoft.carousellayoutmanager.sample.databinding.ItemViewBinding;
 import java.util.Locale;
 import java.util.Random;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+
 public class CarouselPreviewActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final ActivityCarouselPreviewBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_carousel_preview);
+        final ActivityCarouselPreviewBinding binding = ActivityCarouselPreviewBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
 
@@ -74,7 +75,7 @@ public class CarouselPreviewActivity extends AppCompatActivity {
     private void initRecyclerView(final RecyclerView recyclerView, final CarouselLayoutManager layoutManager, final TestAdapter adapter) {
         // enable zoom effect. this line can be customized
         layoutManager.setPostLayoutListener(new CarouselZoomPostLayoutListener());
-        layoutManager.setMaxVisibleItems(2);
+        layoutManager.setMaxVisibleItems(3);
 
         recyclerView.setLayoutManager(layoutManager);
         // we expect only fixed sized item for now
@@ -110,18 +111,17 @@ public class CarouselPreviewActivity extends AppCompatActivity {
 
     private static final class TestAdapter extends RecyclerView.Adapter<TestViewHolder> {
 
-        @SuppressWarnings("UnsecureRandomNumberGeneration")
-        private final Random mRandom = new Random();
         private final int[] mColors;
         private final int[] mPosition;
-        private int mItemsCount = 100;
+        private final int mItemsCount = 100;
 
         TestAdapter() {
             mColors = new int[mItemsCount];
             mPosition = new int[mItemsCount];
             for (int i = 0; mItemsCount > i; ++i) {
                 //noinspection MagicNumber
-                mColors[i] = Color.argb(255, mRandom.nextInt(256), mRandom.nextInt(256), mRandom.nextInt(256));
+                final Random random = new Random();
+                mColors[i] = Color.argb(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
                 mPosition[i] = i;
             }
         }

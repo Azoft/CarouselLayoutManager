@@ -1,45 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="10dp">
 
-    <data>
+    <TextView
+        android:id="@+id/c_item_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#f00" />
 
-        <variable
-            name="test"
-            type="Byte" />
+    <TextView
+        android:id="@+id/c_item_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#f00" />
 
-    </data>
-
-    <RelativeLayout
+    <View
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="10dp">
+        android:layout_height="1dp"
+        android:layout_centerInParent="true"
+        android:background="#0f0" />
 
-        <TextView
-            android:id="@+id/c_item_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#f00" />
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
 
-        <TextView
-            android:id="@+id/c_item_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:background="#f00" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_centerInParent="true"
-            android:background="#0f0" />
-
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true" />
-
-    </RelativeLayout>
-
-</layout>
+</RelativeLayout>
