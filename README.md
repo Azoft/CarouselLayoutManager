@@ -52,7 +52,7 @@ You can enable and disable circular loop using two arguments constructor. Pass t
 
 You can make carousel Vertically and Horizontally by changing first argument.
 
-You can change zoom level of bottom cards by changing `scaleMultiplier` argument in `CarouselZoomPostLayoutListener`. Big thanks to @JeneaVranceanu!
+You can change zoom level of bottom cards by changing `scaleMultiplier` argument in `CarouselZoomPostLayoutListener`. Big thanks to [JeneaVranceanu](https://github.com/JeneaVranceanu)!
 
 #### Contact ####
 
