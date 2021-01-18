@@ -5,13 +5,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.LinearSmoothScroller;
-import android.support.v7.widget.OrientationHelper;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.OrientationHelper;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -36,7 +36,6 @@ import java.util.List;
  * So like layout_height is not {@link ViewGroup.LayoutParams#MATCH_PARENT} for {@link CarouselLayoutManager#VERTICAL}<br />
  * <br />
  */
-@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass", "unused", "WeakerAccess"})
 public class CarouselLayoutManager extends RecyclerView.LayoutManager implements RecyclerView.SmoothScroller.ScrollVectorProvider {
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
@@ -312,7 +311,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     @Override
-    public void onMeasure(final RecyclerView.Recycler recycler, final RecyclerView.State state, final int widthSpec, final int heightSpec) {
+    public void onMeasure(@NonNull final RecyclerView.Recycler recycler, @NonNull final RecyclerView.State state, final int widthSpec, final int heightSpec) {
         mDecoratedChildSizeInvalid = true;
 
         super.onMeasure(recycler, state, widthSpec, heightSpec);
@@ -672,12 +671,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         final int targetPosition = getPosition(view);
         final float directionDistance = getScrollDirection(targetPosition);
 
-        final int distance = Math.round(directionDistance * getScrollItemSize());
-        if (mCircleLayout) {
-            return distance;
-        } else {
-            return distance;
-        }
+        return Math.round(directionDistance * getScrollItemSize());
     }
 
     /**

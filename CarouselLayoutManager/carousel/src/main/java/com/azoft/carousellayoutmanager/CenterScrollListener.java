@@ -1,6 +1,7 @@
 package com.azoft.carousellayoutmanager;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Class for centering items after scroll event.<br />
@@ -11,7 +12,7 @@ public class CenterScrollListener extends RecyclerView.OnScrollListener {
     private boolean mAutoSet = true;
 
     @Override
-    public void onScrollStateChanged(final RecyclerView recyclerView, final int newState) {
+    public void onScrollStateChanged(@NonNull final RecyclerView recyclerView, final int newState) {
         super.onScrollStateChanged(recyclerView, newState);
         final RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
         if (!(layoutManager instanceof CarouselLayoutManager)) {

@@ -1,7 +1,7 @@
 package com.azoft.carousellayoutmanager;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 
 public abstract class CarouselChildSelectionListener {
@@ -31,12 +31,12 @@ public abstract class CarouselChildSelectionListener {
 
         mRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
-            public void onChildViewAttachedToWindow(final View view) {
+            public void onChildViewAttachedToWindow(@NonNull final View view) {
                 view.setOnClickListener(mOnClickListener);
             }
 
             @Override
-            public void onChildViewDetachedFromWindow(final View view) {
+            public void onChildViewDetachedFromWindow(@NonNull final View view) {
                 view.setOnClickListener(null);
             }
         });
