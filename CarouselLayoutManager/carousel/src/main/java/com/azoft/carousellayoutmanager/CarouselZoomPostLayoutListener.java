@@ -1,6 +1,6 @@
 package com.azoft.carousellayoutmanager;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 
 /**
@@ -10,9 +10,19 @@ import android.view.View;
  */
 public class CarouselZoomPostLayoutListener implements CarouselLayoutManager.PostLayoutListener {
 
+    private final float mScaleMultiplier;
+
+    public CarouselZoomPostLayoutListener() {
+        this(0.17f);
+    }
+
+    public CarouselZoomPostLayoutListener(final float scaleMultiplier) {
+        mScaleMultiplier = scaleMultiplier;
+    }
+
     @Override
     public ItemTransformation transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation) {
-        final float scale = (float) (2 * (2 * -StrictMath.atan(Math.abs(itemPositionToCenterDiff) + 1.0) / Math.PI + 1));
+        final float scale = 1.0f - mScaleMultiplier * Math.abs(itemPositionToCenterDiff);
 
         // because scaling will make view smaller in its center, then we should move this item to the top or bottom to make it visible
         final float translateY;
