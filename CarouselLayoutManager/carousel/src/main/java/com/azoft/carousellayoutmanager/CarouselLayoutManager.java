@@ -5,13 +5,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.CallSuper;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
-import androidx.recyclerview.widget.LinearSmoothScroller;
-import androidx.recyclerview.widget.OrientationHelper;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,6 +12,14 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.OrientationHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * An implementation of {@link RecyclerView.LayoutManager} that layout items like carousel.
@@ -335,14 +336,28 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             return;
         }
 
+        detachAndScrapAttachedViews(recycler);
+
         if (null == mDecoratedChildWidth || mDecoratedChildSizeInvalid) {
-            final View view = recycler.getViewForPosition(0);
-            addView(view);
+            final List<RecyclerView.ViewHolder> scrapList = recycler.getScrapList();
+
+            final boolean shouldRecycle;
+            final View view;
+            if (scrapList.isEmpty()) {
+                shouldRecycle = true;
+                view = recycler.getViewForPosition(0);
+                addView(view);
+            } else {
+                shouldRecycle = false;
+                view = scrapList.get(0).itemView;
+            }
             measureChildWithMargins(view, 0, 0);
 
             final int decoratedChildWidth = getDecoratedMeasuredWidth(view);
             final int decoratedChildHeight = getDecoratedMeasuredHeight(view);
-            removeAndRecycleView(view, recycler);
+            if (shouldRecycle) {
+                detachAndScrapView(view, recycler);
+            }
 
             if (null != mDecoratedChildWidth && (mDecoratedChildWidth != decoratedChildWidth || mDecoratedChildHeight != decoratedChildHeight)) {
                 if (INVALID_POSITION == mPendingScrollPosition && null == mPendingCarouselSavedState) {
@@ -374,7 +389,9 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     private int calculateScrollForSelectingPosition(final int itemPosition, final RecyclerView.State state) {
-        if (itemPosition == INVALID_POSITION) return 0;
+        if (itemPosition == INVALID_POSITION) {
+            return 0;
+        }
 
         final int fixedItemPosition = itemPosition < state.getItemCount() ? itemPosition : state.getItemCount() - 1;
         return fixedItemPosition * (VERTICAL == mOrientation ? mDecoratedChildHeight : mDecoratedChildWidth);
