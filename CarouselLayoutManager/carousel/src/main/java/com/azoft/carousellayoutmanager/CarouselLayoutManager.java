@@ -374,6 +374,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     private int calculateScrollForSelectingPosition(final int itemPosition, final RecyclerView.State state) {
+        if (itemPosition == INVALID_POSITION) return 0;
+
         final int fixedItemPosition = itemPosition < state.getItemCount() ? itemPosition : state.getItemCount() - 1;
         return fixedItemPosition * (VERTICAL == mOrientation ? mDecoratedChildHeight : mDecoratedChildWidth);
     }
