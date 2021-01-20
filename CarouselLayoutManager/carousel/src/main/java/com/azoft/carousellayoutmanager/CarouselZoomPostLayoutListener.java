@@ -8,7 +8,7 @@ import android.view.View;
  * We are trying to make items scaling quicker for closer items for center and slower for when they are far away.<br />
  * Tis implementation uses atan function for this purpose.
  */
-public class CarouselZoomPostLayoutListener implements CarouselLayoutManager.PostLayoutListener {
+public class CarouselZoomPostLayoutListener extends CarouselLayoutManager.PostLayoutListener {
 
     private final float mScaleMultiplier;
 

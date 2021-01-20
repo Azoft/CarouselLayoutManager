@@ -475,7 +475,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         ViewCompat.setElevation(view, i);
         ItemTransformation transformation = null;
         if (null != mViewPostLayout) {
-            transformation = mViewPostLayout.transformChild(view, layoutOrder.mItemPositionDiff, mOrientation);
+            transformation = mViewPostLayout.transformChild(view, layoutOrder.mItemPositionDiff, mOrientation, layoutOrder.mItemAdapterPosition);
         }
         if (null == transformation) {
             view.layout(start, top, end, bottom);
@@ -717,7 +717,24 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
      * Generally this method should be used for scaling and translating view item for better (different) view presentation of layouting.
      */
     @SuppressWarnings("InterfaceNeverImplemented")
-    public interface PostLayoutListener {
+    public abstract static class PostLayoutListener {
+
+        /**
+         * Called after child layout finished. Generally you can do any translation and scaling work here.
+         *
+         * @param child                    view that was layout
+         * @param itemPositionToCenterDiff view center line difference to layout center. if > 0 then this item is bellow layout center line, else if not
+         * @param orientation              layoutManager orientation {@link #getLayoutDirection()}
+         * @param itemPositionInAdapter    item position inside adapter for this layout pass
+         */
+        public ItemTransformation transformChild(
+                @NonNull final View child,
+                final float itemPositionToCenterDiff,
+                final int orientation,
+                final int itemPositionInAdapter
+        ) {
+            return transformChild(child, itemPositionToCenterDiff, orientation);
+        }
 
         /**
          * Called after child layout finished. Generally you can do any translation and scaling work here.
@@ -726,7 +743,13 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
          * @param itemPositionToCenterDiff view center line difference to layout center. if > 0 then this item is bellow layout center line, else if not
          * @param orientation              layoutManager orientation {@link #getLayoutDirection()}
          */
-        ItemTransformation transformChild(@NonNull final View child, final float itemPositionToCenterDiff, final int orientation);
+        public ItemTransformation transformChild(
+                @NonNull final View child,
+                final float itemPositionToCenterDiff,
+                final int orientation
+        ) {
+            throw new IllegalStateException("at least one transformChild should be implemented");
+        }
     }
 
     public interface OnCenterItemSelectionListener {
