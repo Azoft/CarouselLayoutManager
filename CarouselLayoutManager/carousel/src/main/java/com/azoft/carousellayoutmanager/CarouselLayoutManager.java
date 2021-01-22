@@ -43,7 +43,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     public static final int VERTICAL = OrientationHelper.VERTICAL;
 
     public static final int INVALID_POSITION = -1;
-    public static final int MAX_VISIBLE_ITEMS = 2;
+    public static final int MAX_VISIBLE_ITEMS = 3;
 
     private static final boolean CIRCLE_LAYOUT = false;
 
@@ -542,8 +542,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             mLayoutHelper.setLayoutOrder(layoutCount - 1, centerItem, centerItem - absCurrentScrollPosition);
 
         } else {
-            final int firstVisible = Math.max(centerItem - mLayoutHelper.mMaxVisibleItems - 1, 0);
-            final int lastVisible = Math.min(centerItem + mLayoutHelper.mMaxVisibleItems + 1, mItemsCount - 1);
+            final int firstVisible = Math.max(centerItem - mLayoutHelper.mMaxVisibleItems, 0);
+            final int lastVisible = Math.min(centerItem + mLayoutHelper.mMaxVisibleItems, mItemsCount - 1);
             final int layoutCount = lastVisible - firstVisible + 1;
 
             mLayoutHelper.initLayoutOrder(layoutCount);

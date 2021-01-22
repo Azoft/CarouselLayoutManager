@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'com.android.tools.build:gradle:4.1.2'
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
         classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
         classpath "com.github.dcendents:android-maven-plugin:1.2"
@@ -22,7 +22,7 @@ group = "com.azoft.carousellayoutmanager"
 final def siteUrl = 'https://github.com/Azoft/CarouselLayoutManager'
 final def gitUrl = "https://github.com/Azoft/CarouselLayoutManager.git"
 // This is the library version used when deploying the artifact
-version = "1.4.1"
+version = "1.4.2"
 
 final Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
