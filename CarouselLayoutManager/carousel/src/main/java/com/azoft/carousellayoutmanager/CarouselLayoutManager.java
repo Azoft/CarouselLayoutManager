@@ -345,7 +345,12 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
             final View view;
             if (scrapList.isEmpty()) {
                 shouldRecycle = true;
-                view = recycler.getViewForPosition(0);
+                final int itemsCount = state.getItemCount();
+                view = recycler.getViewForPosition(
+                        mPendingScrollPosition == INVALID_POSITION ?
+                                0 :
+                                Math.max(0, Math.min(itemsCount - 1, mPendingScrollPosition))
+                );
                 addView(view);
             } else {
                 shouldRecycle = false;
