@@ -52,7 +52,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     private Integer mDecoratedChildHeight;
 
     private final int mOrientation;
-    private final boolean mCircleLayout;
+    private boolean mCircleLayout;
 
     private int mPendingScrollPosition;
 
@@ -92,6 +92,17 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     }
 
     /**
+     * Change circle layout type
+     */
+    @SuppressWarnings("unused")
+    public void setCircleLayout(final boolean circleLayout) {
+        if (mCircleLayout != circleLayout) {
+            mCircleLayout = circleLayout;
+            requestLayout();
+        }
+    }
+
+    /**
      * Setup {@link CarouselLayoutManager.PostLayoutListener} for this LayoutManager.
      * Its methods will be called for each visible view item after general LayoutManager layout finishes. <br />
      * <br />
@@ -114,8 +125,8 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
     @CallSuper
     @SuppressWarnings("unused")
     public void setMaxVisibleItems(final int maxVisibleItems) {
-        if (0 >= maxVisibleItems) {
-            throw new IllegalArgumentException("maxVisibleItems can't be less then 1");
+        if (0 > maxVisibleItems) {
+            throw new IllegalArgumentException("maxVisibleItems can't be less then 0");
         }
         mLayoutHelper.mMaxVisibleItems = maxVisibleItems;
         requestLayout();
@@ -529,7 +540,7 @@ public class CarouselLayoutManager extends RecyclerView.LayoutManager implements
         final int centerItem = Math.round(absCurrentScrollPosition);
 
         if (mCircleLayout && 1 < mItemsCount) {
-            final int layoutCount = Math.min(mLayoutHelper.mMaxVisibleItems * 2 + 3, mItemsCount);// + 3 = 1 (center item) + 2 (addition bellow maxVisibleItems)
+            final int layoutCount = Math.min(mLayoutHelper.mMaxVisibleItems * 2 + 1, mItemsCount);
 
             mLayoutHelper.initLayoutOrder(layoutCount);
 
