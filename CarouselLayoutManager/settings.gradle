@@ -1,1 +1,1 @@
-include ':carousel', ':sample'
+include ':carousellayoutmanager', ':sample'

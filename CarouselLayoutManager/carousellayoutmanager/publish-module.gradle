@@ -1,0 +1,78 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'org.jetbrains.dokka'
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (project.plugins.findPlugin("com.android.library")) {
+        from android.sourceSets.main.java.srcDirs
+    } else {
+        from sourceSets.main.java.srcDirs
+    }
+}
+
+//tasks.withType(dokkaHtmlPartial.getClass()).configureEach {
+//    pluginsMapConfiguration.set(
+//            ["org.jetbrains.dokka.base.DokkaBase": """{ "separateInheritedMembers": true}"""]
+//    )
+//}
+
+task javadocJar(type: Jar) {
+    archiveClassifier.set('javadoc')
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives javadocJar
+}
+
+group = PUBLISH_GROUP_ID
+version = PUBLISH_VERSION
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId PUBLISH_GROUP_ID
+                artifactId PUBLISH_ARTIFACT_ID
+                version PUBLISH_VERSION
+                if (project.plugins.findPlugin("com.android.library")) {
+                    artifact bundleReleaseAar
+                } else {
+                    artifact("$buildDir/libs/${project.getName()}-${version}.jar")
+                }
+
+                artifact androidSourcesJar
+                artifact javadocJar
+
+                pom {
+                    name = PUBLISH_ARTIFACT_ID
+                    description = 'Stream Chat official Android SDK'
+                    url = 'https://github.com/Azoft/CarouselLayoutManager'
+                    licenses {
+                        license {
+                            name = 'License'
+                            url = 'https://github.com/Azoft/CarouselLayoutManager/blob/master/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'mig35'
+                            name = 'Mikhail Gurevich'
+                            email = 'mig35@mig35.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:github.com/Azoft/CarouselLayoutManager.git'
+                        developerConnection = 'scm:git:ssh://github.com/Azoft/CarouselLayoutManager.git'
+                        url = 'https://github.com/Azoft/CarouselLayoutManager/tree/main'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications
+}

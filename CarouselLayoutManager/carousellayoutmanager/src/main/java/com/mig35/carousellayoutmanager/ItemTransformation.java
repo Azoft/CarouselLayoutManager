@@ -1,4 +1,4 @@
-package com.azoft.carousellayoutmanager;
+package com.mig35.carousellayoutmanager;
 
 public class ItemTransformation {
 
