@@ -10,10 +10,10 @@ Android LayoutManager for RecyclerView to support Carousel view style
 ## Integration with Gradle
 
 ```
-    implementation 'com.azoft.carousellayoutmanager:carousel:version'
+    implementation 'com.mig35:carousellayoutmanager:version'
 ```
 
-Please replace `version` with the latest version: [![Download](https://api.bintray.com/packages/azoft/maven/carousel/images/download.svg)](https://bintray.com/azoft/maven/carousel/_latestVersion)
+Please replace `version` with the latest version (1.4.6): <a href="https://maven-badges.herokuapp.com/maven-central/com.mig35/carousellayoutmanager"><img src="https://maven-badges.herokuapp.com/maven-central/com.mig35/carousellayoutmanager/badge.svg" /></a>
 
 ## Description
 
@@ -58,11 +58,11 @@ You can change zoom level of bottom cards by changing `scaleMultiplier` argument
 
 Feel free to get in touch.
 
+    Email:      mig35@mig35.com
     Website:    http://www.azoft.com
     Twitter:    @azoft
     LinkedIn:   https://www.linkedin.com/company/azoft
     Facebook:   https://www.facebook.com/azoft.company
-    Email:      android-mobile@azoft.com
 
 #### License ####
 
