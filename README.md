@@ -13,7 +13,7 @@ Android LayoutManager for RecyclerView to support Carousel view style
     implementation 'com.mig35:carousellayoutmanager:version'
 ```
 
-Please replace `version` with the latest version (1.4.6): <a href="https://maven-badges.herokuapp.com/maven-central/com.mig35/carousellayoutmanager"><img src="https://maven-badges.herokuapp.com/maven-central/com.mig35/carousellayoutmanager/badge.svg" /></a>
+Please replace `version` with the latest version: <a href="https://maven-badges.herokuapp.com/maven-central/com.mig35/carousellayoutmanager"><img src="https://maven-badges.herokuapp.com/maven-central/com.mig35/carousellayoutmanager/badge.svg" /></a>
 
 ## Description
 
